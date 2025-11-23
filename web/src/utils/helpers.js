@@ -71,5 +71,5 @@ export const shareContent = async (title, text, url) => {
 export const getImageUrl = (imagePath) => {
     if (!imagePath) return '/placeholder-image.jpg';
     if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:3000${imagePath}`;
+    return `https://news-api-sepia-delta.vercel.app${imagePath}`;
 };
