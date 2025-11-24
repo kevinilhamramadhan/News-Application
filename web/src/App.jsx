@@ -10,8 +10,6 @@ import KategoriPage from './pages/KategoriPage';
 import KategoriDetailPage from './pages/KategoriDetailPage';
 import BookmarkPage from './pages/BookmarkPage';
 import ProfilPage from './pages/ProfilPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminBeritaPage from './pages/AdminBeritaPage';
 import AdminCreateBeritaPage from './pages/AdminCreateBeritaPage';
@@ -40,15 +38,6 @@ function App() {
     // Home
     if (currentPath === '/' || pathParts.length === 0) {
       return <HomePage />;
-    }
-
-    // Auth routes
-    if (currentPath === '/login') {
-      return <LoginPage />;
-    }
-
-    if (currentPath === '/register') {
-      return <RegisterPage />;
     }
 
     if (currentPath === '/profil') {

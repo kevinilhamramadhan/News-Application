@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Eye, Star, Bookmark, Share2, ChevronLeft } from 'lucide-react';
+import { Calendar, Star, Bookmark, Share2, ChevronLeft } from 'lucide-react';
 import { useBeritaDetail } from '../hooks/useBerita';
 import { useBookmark } from '../hooks/useBookmark';
 import { formatDate, shareContent, getImageUrl } from '../utils/helpers';
@@ -15,12 +15,20 @@ const BeritaDetailPage = ({ id }) => {
 
     const isBookmarked = bookmarks.includes(parseInt(id));
 
-    const handleBookmarkToggle = () => {
-        const wasBookmarked = toggleBookmark(parseInt(id));
-        setToast({
-            message: wasBookmarked ? 'Berita disimpan ke bookmark' : 'Berita dihapus dari bookmark',
-            type: 'success',
-        });
+    const handleBookmarkToggle = async () => {
+        try {
+            const wasBookmarked = await toggleBookmark(parseInt(id));
+            setToast({
+                message: wasBookmarked ? 'Berita disimpan ke bookmark' : 'Berita dihapus dari bookmark',
+                type: 'success',
+            });
+        } catch (error) {
+            console.error('Bookmark toggle error:', error);
+            setToast({
+                message: 'Gagal menyimpan bookmark. Silakan login terlebih dahulu.',
+                type: 'error',
+            });
+        }
     };
 
     const handleShare = async () => {
@@ -109,10 +117,6 @@ const BeritaDetailPage = ({ id }) => {
                         <Calendar className="w-4 h-4" />
                         <span>{formatDate(berita.createdAt || berita.tanggal)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Eye className="w-4 h-4" />
-                        <span>{berita.views || 0} views</span>
-                    </div>
                     {berita.rating && (
                         <div className="flex items-center gap-2">
                             <Star className="w-4 h-4 text-yellow-500 fill-current" />
@@ -126,8 +130,8 @@ const BeritaDetailPage = ({ id }) => {
                     <button
                         onClick={handleBookmarkToggle}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isBookmarked
-                                ? 'bg-primary-600 text-white hover:bg-primary-700'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-primary-600 text-white hover:bg-primary-700'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />

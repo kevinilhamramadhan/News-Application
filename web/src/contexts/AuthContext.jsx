@@ -20,10 +20,18 @@ export const AuthProvider = ({ children }) => {
         const initAuth = async () => {
             try {
                 const { user: currentUser } = await authService.getCurrentUser();
-                setUser(currentUser);
-                setIsAdmin(currentUser?.role === 'admin');
+
+                if (currentUser) {
+                    setUser(currentUser);
+                    setIsAdmin(currentUser?.role === 'admin');
+                } else {
+                    setUser(null);
+                    setIsAdmin(false);
+                }
             } catch (error) {
                 console.error('Init auth error:', error);
+                setUser(null);
+                setIsAdmin(false);
             } finally {
                 setLoading(false);
             }

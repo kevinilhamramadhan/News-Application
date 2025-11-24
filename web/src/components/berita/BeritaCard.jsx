@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Calendar, Eye, Star, Bookmark, Image as ImageIcon } from 'lucide-react';
+import { Calendar, Star, Bookmark, Image as ImageIcon } from 'lucide-react';
 import { formatRelativeTime, truncateText, getImageUrl } from '../../utils/helpers';
 import { useAuthModal } from '../../hooks/useAuthModal';
 
@@ -20,7 +20,11 @@ const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false, requireAut
             return;
         }
 
-        onBookmarkToggle(berita.id);
+        try {
+            await onBookmarkToggle(berita.id);
+        } catch (error) {
+            console.error('Bookmark error:', error);
+        }
     };
 
     const handleImageError = () => {
@@ -87,10 +91,6 @@ const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false, requireAut
                         <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             <span>{formatRelativeTime(berita.created_at || berita.createdAt || berita.tanggal)}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <Eye className="w-4 h-4" />
-                            <span>{berita.views || 0}</span>
                         </div>
                     </div>
                     {berita.rating && (

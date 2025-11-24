@@ -75,6 +75,14 @@ export const authService = {
      */
     getCurrentUser: async () => {
         try {
+            // First check if there's an active session
+            const { data: { session } } = await supabase.auth.getSession();
+
+            // If no session, return null user without throwing error
+            if (!session) {
+                return { user: null, error: null };
+            }
+
             // Get auth user
             const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -110,8 +118,11 @@ export const authService = {
                 error: null
             };
         } catch (error) {
-            console.error('Get current user error:', error);
-            return { user: null, error };
+            // Only log errors that aren't related to missing session
+            if (error.name !== 'AuthSessionMissingError') {
+                console.error('Get current user error:', error);
+            }
+            return { user: null, error: null };
         }
     },
 
