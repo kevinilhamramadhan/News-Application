@@ -75,8 +75,51 @@ export const authService = {
      */
     getCurrentUser: async () => {
         try {
-            // First check if there's an active session
-            const { data: { session } } = await supabase.auth.getSession();
+            // First check if there's an active session with timeout
+            const sessionPromise = supabase.auth.getSession();
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Session timeout')), 5000)
+            );
+
+            let sessionData;
+            try {
+                sessionData = await Promise.race([sessionPromise, timeoutPromise]);
+            } catch (timeoutError) {
+                // If getSession times out, try getUser directly
+                const { data: { user }, error } = await supabase.auth.getUser();
+                if (error || !user) {
+                    return { user: null, error: null };
+                }
+
+                // If we have user from getUser, continue with profile fetch
+                const { data: profile, error: profileError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profileError) {
+                    return {
+                        user: {
+                            ...user,
+                            profile: null,
+                            role: 'user'
+                        },
+                        error: null
+                    };
+                }
+
+                return {
+                    user: {
+                        ...user,
+                        profile,
+                        role: profile?.role || 'user'
+                    },
+                    error: null
+                };
+            }
+
+            const { session } = sessionData.data;
 
             // If no session, return null user without throwing error
             if (!session) {

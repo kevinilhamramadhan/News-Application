@@ -21,7 +21,6 @@ export const ITEMS_PER_PAGE = 9;
 export const SORT_OPTIONS = [
     { value: 'newest', label: 'Terbaru' },
     { value: 'oldest', label: 'Terlama' },
-    { value: 'popular', label: 'Populer' },
 ];
 
 export const STATUS_OPTIONS = [

@@ -13,21 +13,28 @@ const BeritaDetailPage = ({ id }) => {
     const [relatedBerita, setRelatedBerita] = useState([]);
     const [toast, setToast] = useState(null);
 
-    const isBookmarked = bookmarks.includes(parseInt(id));
+    const isBookmarked = bookmarks.includes(id);
 
     const handleBookmarkToggle = async () => {
         try {
-            const wasBookmarked = await toggleBookmark(parseInt(id));
+            const wasBookmarked = await toggleBookmark(id);
             setToast({
                 message: wasBookmarked ? 'Berita disimpan ke bookmark' : 'Berita dihapus dari bookmark',
                 type: 'success',
             });
         } catch (error) {
             console.error('Bookmark toggle error:', error);
-            setToast({
-                message: 'Gagal menyimpan bookmark. Silakan login terlebih dahulu.',
-                type: 'error',
-            });
+            if (error.message === 'AUTH_REQUIRED') {
+                setToast({
+                    message: 'Silakan login terlebih dahulu untuk menyimpan bookmark.',
+                    type: 'error',
+                });
+            } else {
+                setToast({
+                    message: 'Gagal menyimpan bookmark. Silakan coba lagi.',
+                    type: 'error',
+                });
+            }
         }
     };
 

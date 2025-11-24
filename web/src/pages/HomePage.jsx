@@ -62,8 +62,6 @@ const HomePage = () => {
                             </p>
                             <div className="flex items-center gap-4 text-sm">
                                 <span>{heroBerita.kategori?.nama}</span>
-                                <span>•</span>
-                                <span>{heroBerita.views || 0} views</span>
                             </div>
                         </div>
                     </div>

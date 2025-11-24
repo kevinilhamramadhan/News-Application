@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import { authService } from '../services/authService';
-import { onAuthStateChange } from '../config/supabase';
+import { onAuthStateChange, supabase } from '../config/supabase';
 
 // Create Auth Context
 export const AuthContext = createContext(null);
@@ -16,35 +16,79 @@ export const AuthProvider = ({ children }) => {
 
     // Initialize auth state
     useEffect(() => {
-        // Check for existing session
-        const initAuth = async () => {
-            try {
-                const { user: currentUser } = await authService.getCurrentUser();
+        // Listen for auth state changes - this automatically handles initial session
+        const { data: { subscription } } = onAuthStateChange(async (event, session) => {
+            if (event === 'INITIAL_SESSION') {
+                // Handle initial session on page load
+                if (session?.user) {
+                    try {
+                        // Fetch user profile from database
+                        const { data: profile } = await supabase
+                            .from('users')
+                            .select('*')
+                            .eq('id', session.user.id)
+                            .single();
 
-                if (currentUser) {
-                    setUser(currentUser);
-                    setIsAdmin(currentUser?.role === 'admin');
+                        const userData = {
+                            ...session.user,
+                            profile: profile || null,
+                            role: profile?.role || 'user'
+                        };
+
+                        setUser(userData);
+                        setIsAdmin(userData.role === 'admin');
+                    } catch (error) {
+                        // Set user without profile if error
+                        setUser({
+                            ...session.user,
+                            profile: null,
+                            role: 'user'
+                        });
+                        setIsAdmin(false);
+                    }
                 } else {
                     setUser(null);
                     setIsAdmin(false);
                 }
-            } catch (error) {
-                console.error('Init auth error:', error);
-                setUser(null);
-                setIsAdmin(false);
-            } finally {
                 setLoading(false);
-            }
-        };
+            } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                if (session?.user) {
+                    try {
+                        // Fetch user profile from database with 2s timeout
+                        const profilePromise = supabase
+                            .from('users')
+                            .select('*')
+                            .eq('id', session.user.id)
+                            .single();
 
-        initAuth();
+                        const timeoutPromise = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('timeout')), 2000)
+                        );
 
-        // Listen for auth state changes
-        const { data: { subscription } } = onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                const { user: currentUser } = await authService.getCurrentUser();
-                setUser(currentUser);
-                setIsAdmin(currentUser?.role === 'admin');
+                        const { data: profile } = await Promise.race([
+                            profilePromise,
+                            timeoutPromise
+                        ]).catch(() => ({ data: null }));
+
+                        const userData = {
+                            ...session.user,
+                            profile: profile || null,
+                            role: profile?.role || 'user'
+                        };
+
+                        setUser(userData);
+                        setIsAdmin(userData.role === 'admin');
+                    } catch (error) {
+                        // Set user without profile if error
+                        const userData = {
+                            ...session.user,
+                            profile: null,
+                            role: 'user'
+                        };
+                        setUser(userData);
+                        setIsAdmin(false);
+                    }
+                }
             } else if (event === 'SIGNED_OUT') {
                 setUser(null);
                 setIsAdmin(false);

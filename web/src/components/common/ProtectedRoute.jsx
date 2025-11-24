@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
 
     // Check if user is authenticated
     if (!user) {
-        window.location.hash = '/login';
+        window.location.hash = '/';
         return null;
     }
 

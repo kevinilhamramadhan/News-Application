@@ -68,20 +68,20 @@ export const useBookmark = () => {
         }
 
         try {
-            const { isBookmarked } = await bookmarkService.toggleBookmark(beritaId);
+            const isCurrentlyBookmarked = bookmarks.includes(beritaId);
 
-            if (isBookmarked) {
-                setBookmarks(prev => [...prev, beritaId]);
+            if (isCurrentlyBookmarked) {
+                await removeBookmark(beritaId);
+                return false; // Was bookmarked, now removed
             } else {
-                setBookmarks(prev => prev.filter(id => id !== beritaId));
+                await addBookmark(beritaId);
+                return true; // Was not bookmarked, now added
             }
-
-            return isBookmarked;
         } catch (error) {
             console.error('Toggle bookmark error:', error);
             throw error;
         }
-    }, [user]);
+    }, [user, bookmarks, addBookmark, removeBookmark]);
 
     const isBookmarked = useCallback((beritaId) => {
         return bookmarks.includes(beritaId);
