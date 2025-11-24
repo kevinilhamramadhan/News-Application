@@ -14,7 +14,7 @@ const BeritaFilter = ({ onFilterChange, kategoriList = [] }) => {
         const debouncedSearch = debounce(() => {
             onFilterChange({
                 search: searchTerm,
-                kategori: selectedKategori,
+                kategori_id: selectedKategori,  // Changed from 'kategori' to 'kategori_id'
                 sort: selectedSort,
             });
         }, 500);

@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBerita } from '../hooks/useBerita';
 import { useKategori } from '../hooks/useKategori';
 import { useBookmark } from '../hooks/useBookmark';
+import { useAuth } from '../hooks/useAuth';
 import BeritaGrid from '../components/berita/BeritaGrid';
 import BeritaFilter from '../components/berita/BeritaFilter';
 import { ITEMS_PER_PAGE } from '../utils/constants';
@@ -10,7 +11,7 @@ import { ITEMS_PER_PAGE } from '../utils/constants';
 const BeritaPage = () => {
     const [filters, setFilters] = useState({
         search: '',
-        kategori: '',
+        kategori_id: '',  // Changed from 'kategori' to 'kategori_id'
         sort: 'newest',
         page: 1,
         limit: ITEMS_PER_PAGE,
@@ -19,6 +20,7 @@ const BeritaPage = () => {
     const { berita, loading, error, pagination } = useBerita(filters);
     const { kategori } = useKategori();
     const { bookmarks, toggleBookmark, isAuthenticated } = useBookmark();
+    const { isAdmin } = useAuth();
 
     const handleFilterChange = (newFilters) => {
         setFilters((prev) => ({
@@ -68,6 +70,7 @@ const BeritaPage = () => {
                 onBookmarkToggle={handleBookmarkToggle}
                 bookmarkedIds={bookmarks}
                 requireAuth={!isAuthenticated}
+                showBookmarkButton={!isAdmin}
             />
 
             {/* Pagination */}

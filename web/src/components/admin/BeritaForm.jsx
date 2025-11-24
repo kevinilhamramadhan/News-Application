@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Image as ImageIcon, X, AlertCircle } from 'lucide-react';
+import { Save, Image as ImageIcon, X, AlertCircle, Plus } from 'lucide-react';
 import { adminService } from '../../services/adminService';
 import { supabase } from '../../config/supabase';
 
@@ -13,8 +13,9 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
         kategori_id: '',
         konten: '',
         ringkasan: '',
-        gambar: '',
-        status: 'draft'
+        gambar_url: '',
+        status: 'draft',
+        is_featured: false
     });
     const [kategoris, setKategoris] = useState([]);
     const [imageFile, setImageFile] = useState(null);
@@ -23,6 +24,12 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
     const [loading, setLoading] = useState(false);
     const [loadingData, setLoadingData] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+
+    // Category modal states
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [newCategory, setNewCategory] = useState({ nama: '', deskripsi: '' });
+    const [categoryErrors, setCategoryErrors] = useState({});
+    const [savingCategory, setSavingCategory] = useState(false);
 
     // Fetch kategoris
     useEffect(() => {
@@ -61,12 +68,13 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
                 kategori_id: data.kategori_id || '',
                 konten: data.konten || '',
                 ringkasan: data.ringkasan || '',
-                gambar: data.gambar || '',
-                status: data.status || 'draft'
+                gambar_url: data.gambar_url || '',
+                status: data.status || 'draft',
+                is_featured: data.is_featured || false
             });
 
-            if (data.gambar) {
-                setImagePreview(data.gambar);
+            if (data.gambar_url) {
+                setImagePreview(data.gambar_url);
             }
         } catch (error) {
             console.error('Fetch berita error:', error);
@@ -119,7 +127,59 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
     const removeImage = () => {
         setImageFile(null);
         setImagePreview('');
-        setFormData(prev => ({ ...prev, gambar: '' }));
+        setFormData(prev => ({ ...prev, gambar_url: '' }));
+    };
+
+    const handleCreateCategory = async () => {
+        // Validate category
+        const newErrors = {};
+        if (!newCategory.nama.trim()) {
+            newErrors.nama = 'Nama kategori harus diisi';
+        }
+        if (!newCategory.deskripsi.trim()) {
+            newErrors.deskripsi = 'Deskripsi kategori harus diisi';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setCategoryErrors(newErrors);
+            return;
+        }
+
+        setSavingCategory(true);
+        try {
+            // Create slug from nama
+            const slug = newCategory.nama.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-');
+
+            const { data, error } = await supabase
+                .from('kategori')
+                .insert([{
+                    nama: newCategory.nama.trim(),
+                    slug: slug,
+                    deskripsi: newCategory.deskripsi.trim()
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Refresh kategoris list
+            await fetchKategoris();
+
+            // Set the newly created category as selected
+            setFormData(prev => ({ ...prev, kategori_id: data.id }));
+
+            // Close modal and reset
+            setShowCategoryModal(false);
+            setNewCategory({ nama: '', deskripsi: '' });
+            setCategoryErrors({});
+        } catch (error) {
+            console.error('Create category error:', error);
+            setCategoryErrors({ submit: 'Gagal membuat kategori. ' + error.message });
+        } finally {
+            setSavingCategory(false);
+        }
     };
 
     const validate = () => {
@@ -165,7 +225,7 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
         setErrorMessage('');
 
         try {
-            let imageUrl = submitData.gambar;
+            let imageUrl = submitData.gambar_url;
 
             // Upload image if new file selected
             if (imageFile) {
@@ -179,7 +239,7 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
                 imageUrl = url;
             }
 
-            submitData.gambar = imageUrl;
+            submitData.gambar_url = imageUrl;
 
             // Create or update berita
             if (beritaId) {
@@ -216,189 +276,316 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
     }
 
     return (
-        <form className="space-y-6">
-            {/* Error Alert */}
-            {errorMessage && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                    <span>{errorMessage}</span>
+        <>
+            <form className="space-y-6">
+                {/* Error Alert */}
+                {errorMessage && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                        <span>{errorMessage}</span>
+                    </div>
+                )}
+
+                {/* Judul */}
+                <div>
+                    <label htmlFor="judul" className="block text-sm font-medium text-gray-700 mb-2">
+                        Judul Berita <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="judul"
+                        name="judul"
+                        value={formData.judul}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${errors.judul
+                            ? 'border-red-300 focus:ring-red-500'
+                            : 'border-gray-300 focus:ring-primary-500'
+                            }`}
+                        placeholder="Masukkan judul berita"
+                    />
+                    {errors.judul && (
+                        <p className="mt-1 text-sm text-red-600">{errors.judul}</p>
+                    )}
                 </div>
-            )}
 
-            {/* Judul */}
-            <div>
-                <label htmlFor="judul" className="block text-sm font-medium text-gray-700 mb-2">
-                    Judul Berita <span className="text-red-500">*</span>
-                </label>
-                <input
-                    type="text"
-                    id="judul"
-                    name="judul"
-                    value={formData.judul}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${errors.judul
-                            ? 'border-red-300 focus:ring-red-500'
-                            : 'border-gray-300 focus:ring-primary-500'
-                        }`}
-                    placeholder="Masukkan judul berita"
-                />
-                {errors.judul && (
-                    <p className="mt-1 text-sm text-red-600">{errors.judul}</p>
-                )}
-            </div>
-
-            {/* Kategori */}
-            <div>
-                <label htmlFor="kategori_id" className="block text-sm font-medium text-gray-700 mb-2">
-                    Kategori <span className="text-red-500">*</span>
-                </label>
-                <select
-                    id="kategori_id"
-                    name="kategori_id"
-                    value={formData.kategori_id}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${errors.kategori_id
-                            ? 'border-red-300 focus:ring-red-500'
-                            : 'border-gray-300 focus:ring-primary-500'
-                        }`}
-                >
-                    <option value="">Pilih Kategori</option>
-                    {kategoris.map((kategori) => (
-                        <option key={kategori.id} value={kategori.id}>
-                            {kategori.nama}
-                        </option>
-                    ))}
-                </select>
-                {errors.kategori_id && (
-                    <p className="mt-1 text-sm text-red-600">{errors.kategori_id}</p>
-                )}
-            </div>
-
-            {/* Ringkasan */}
-            <div>
-                <label htmlFor="ringkasan" className="block text-sm font-medium text-gray-700 mb-2">
-                    Ringkasan <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                    id="ringkasan"
-                    name="ringkasan"
-                    value={formData.ringkasan}
-                    onChange={handleChange}
-                    rows={3}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${errors.ringkasan
-                            ? 'border-red-300 focus:ring-red-500'
-                            : 'border-gray-300 focus:ring-primary-500'
-                        }`}
-                    placeholder="Ringkasan singkat berita"
-                />
-                {errors.ringkasan && (
-                    <p className="mt-1 text-sm text-red-600">{errors.ringkasan}</p>
-                )}
-            </div>
-
-            {/* Konten */}
-            <div>
-                <label htmlFor="konten" className="block text-sm font-medium text-gray-700 mb-2">
-                    Konten Berita <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                    id="konten"
-                    name="konten"
-                    value={formData.konten}
-                    onChange={handleChange}
-                    rows={12}
-                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${errors.konten
-                            ? 'border-red-300 focus:ring-red-500'
-                            : 'border-gray-300 focus:ring-primary-500'
-                        }`}
-                    placeholder="Tulis konten berita lengkap di sini..."
-                />
-                {errors.konten && (
-                    <p className="mt-1 text-sm text-red-600">{errors.konten}</p>
-                )}
-                <p className="mt-1 text-sm text-gray-500">
-                    {formData.konten.length} karakter (minimal 50)
-                </p>
-            </div>
-
-            {/* Image Upload */}
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Gambar Berita <span className="text-red-500">*</span>
-                </label>
-
-                {imagePreview ? (
-                    <div className="relative">
-                        <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="w-full h-64 object-cover rounded-lg"
-                        />
+                {/* Kategori */}
+                <div>
+                    <label htmlFor="kategori_id" className="block text-sm font-medium text-gray-700 mb-2">
+                        Kategori <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                        <select
+                            id="kategori_id"
+                            name="kategori_id"
+                            value={formData.kategori_id}
+                            onChange={handleChange}
+                            className={`flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${errors.kategori_id
+                                ? 'border-red-300 focus:ring-red-500'
+                                : 'border-gray-300 focus:ring-primary-500'
+                                }`}
+                        >
+                            <option value="">Pilih Kategori</option>
+                            {kategoris.map((kategori) => (
+                                <option key={kategori.id} value={kategori.id}>
+                                    {kategori.nama}
+                                </option>
+                            ))}
+                        </select>
                         <button
                             type="button"
-                            onClick={removeImage}
-                            className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                            onClick={() => setShowCategoryModal(true)}
+                            className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors flex items-center gap-2"
                         >
-                            <X className="w-5 h-5" />
+                            <Plus className="w-5 h-5" />
+                            <span className="hidden sm:inline">Buat Kategori</span>
                         </button>
                     </div>
-                ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <ImageIcon className="w-12 h-12 text-gray-400 mb-3" />
-                            <p className="text-sm text-gray-600 mb-1">
-                                <span className="font-semibold">Klik untuk upload</span> atau drag and drop
-                            </p>
-                            <p className="text-xs text-gray-500">PNG, JPG, GIF hingga 5MB</p>
-                        </div>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="hidden"
-                        />
+                    {errors.kategori_id && (
+                        <p className="mt-1 text-sm text-red-600">{errors.kategori_id}</p>
+                    )}
+                </div>
+
+                {/* Ringkasan */}
+                <div>
+                    <label htmlFor="ringkasan" className="block text-sm font-medium text-gray-700 mb-2">
+                        Ringkasan <span className="text-red-500">*</span>
                     </label>
-                )}
+                    <textarea
+                        id="ringkasan"
+                        name="ringkasan"
+                        value={formData.ringkasan}
+                        onChange={handleChange}
+                        rows={3}
+                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${errors.ringkasan
+                            ? 'border-red-300 focus:ring-red-500'
+                            : 'border-gray-300 focus:ring-primary-500'
+                            }`}
+                        placeholder="Ringkasan singkat berita"
+                    />
+                    {errors.ringkasan && (
+                        <p className="mt-1 text-sm text-red-600">{errors.ringkasan}</p>
+                    )}
+                </div>
 
-                {errors.gambar && (
-                    <p className="mt-1 text-sm text-red-600">{errors.gambar}</p>
-                )}
-            </div>
+                {/* Konten */}
+                <div>
+                    <label htmlFor="konten" className="block text-sm font-medium text-gray-700 mb-2">
+                        Konten Berita <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                        id="konten"
+                        name="konten"
+                        value={formData.konten}
+                        onChange={handleChange}
+                        rows={12}
+                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${errors.konten
+                            ? 'border-red-300 focus:ring-red-500'
+                            : 'border-gray-300 focus:ring-primary-500'
+                            }`}
+                        placeholder="Tulis konten berita lengkap di sini..."
+                    />
+                    {errors.konten && (
+                        <p className="mt-1 text-sm text-red-600">{errors.konten}</p>
+                    )}
+                    <p className="mt-1 text-sm text-gray-500">
+                        {formData.konten.length} karakter (minimal 50)
+                    </p>
+                </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <button
-                    type="button"
-                    onClick={(e) => handleSubmit(e, 'draft')}
-                    disabled={loading}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <Save className="w-5 h-5" />
-                    {loading ? 'Menyimpan...' : 'Simpan sebagai Draft'}
-                </button>
+                {/* Image Upload */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Gambar Berita <span className="text-red-500">*</span>
+                    </label>
 
-                <button
-                    type="button"
-                    onClick={(e) => handleSubmit(e, 'published')}
-                    disabled={loading}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <Save className="w-5 h-5" />
-                    {loading ? 'Menyimpan...' : 'Publish Berita'}
-                </button>
+                    {imagePreview ? (
+                        <div className="relative">
+                            <img
+                                src={imagePreview}
+                                alt="Preview"
+                                className="w-full h-64 object-cover rounded-lg"
+                            />
+                            <button
+                                type="button"
+                                onClick={removeImage}
+                                className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                    ) : (
+                        <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <ImageIcon className="w-12 h-12 text-gray-400 mb-3" />
+                                <p className="text-sm text-gray-600 mb-1">
+                                    <span className="font-semibold">Klik untuk upload</span> atau drag and drop
+                                </p>
+                                <p className="text-xs text-gray-500">PNG, JPG, GIF hingga 5MB</p>
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                className="hidden"
+                            />
+                        </label>
+                    )}
 
-                {onCancel && (
+                    {errors.gambar && (
+                        <p className="mt-1 text-sm text-red-600">{errors.gambar}</p>
+                    )}
+                </div>
+
+                {/* Featured Checkbox */}
+                <div className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <input
+                        type="checkbox"
+                        id="is_featured"
+                        checked={formData.is_featured}
+                        onChange={(e) => setFormData(prev => ({ ...prev, is_featured: e.target.checked }))}
+                        className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    />
+                    <label htmlFor="is_featured" className="flex-1 cursor-pointer">
+                        <span className="text-sm font-semibold text-gray-900">Tandai sebagai Berita Unggulan</span>
+                        <p className="text-xs text-gray-600 mt-0.5">Berita unggulan akan ditampilkan di bagian hero homepage</p>
+                    </label>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
                     <button
                         type="button"
-                        onClick={onCancel}
+                        onClick={(e) => handleSubmit(e, 'draft')}
                         disabled={loading}
-                        className="px-6 py-3 bg-white text-gray-700 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        Batal
+                        <Save className="w-5 h-5" />
+                        {loading ? 'Menyimpan...' : 'Simpan sebagai Draft'}
                     </button>
-                )}
-            </div>
-        </form>
+
+                    <button
+                        type="button"
+                        onClick={(e) => handleSubmit(e, 'published')}
+                        disabled={loading}
+                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <Save className="w-5 h-5" />
+                        {loading ? 'Menyimpan...' : 'Publish Berita'}
+                    </button>
+
+                    {onCancel && (
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            disabled={loading}
+                            className="px-6 py-3 bg-white text-gray-700 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Batal
+                        </button>
+                    )}
+                </div>
+            </form>
+
+            {/* Category Creation Modal */}
+            {showCategoryModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg max-w-md w-full p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xl font-bold text-gray-900">Buat Kategori Baru</h3>
+                            <button
+                                onClick={() => {
+                                    setShowCategoryModal(false);
+                                    setNewCategory({ nama: '', deskripsi: '' });
+                                    setCategoryErrors({});
+                                }}
+                                className="text-gray-400 hover:text-gray-600"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {categoryErrors.submit && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-3 mb-4">
+                                <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                                <span>{categoryErrors.submit}</span>
+                            </div>
+                        )}
+
+                        <div className="space-y-4">
+                            {/* Nama Kategori */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Nama Kategori <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={newCategory.nama}
+                                    onChange={(e) => {
+                                        setNewCategory(prev => ({ ...prev, nama: e.target.value }));
+                                        if (categoryErrors.nama) setCategoryErrors(prev => ({ ...prev, nama: '' }));
+                                    }}
+                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${categoryErrors.nama
+                                        ? 'border-red-300 focus:ring-red-500'
+                                        : 'border-gray-300 focus:ring-primary-500'
+                                        }`}
+                                    placeholder="contoh: Teknologi"
+                                />
+                                {categoryErrors.nama && (
+                                    <p className="mt-1 text-sm text-red-600">{categoryErrors.nama}</p>
+                                )}
+                            </div>
+
+                            {/* Deskripsi Kategori */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Deskripsi <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    value={newCategory.deskripsi}
+                                    onChange={(e) => {
+                                        setNewCategory(prev => ({ ...prev, deskripsi: e.target.value }));
+                                        if (categoryErrors.deskripsi) setCategoryErrors(prev => ({ ...prev, deskripsi: '' }));
+                                    }}
+                                    rows={3}
+                                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${categoryErrors.deskripsi
+                                        ? 'border-red-300 focus:ring-red-500'
+                                        : 'border-gray-300 focus:ring-primary-500'
+                                        }`}
+                                    placeholder="Deskripsi singkat kategori"
+                                />
+                                {categoryErrors.deskripsi && (
+                                    <p className="mt-1 text-sm text-red-600">{categoryErrors.deskripsi}</p>
+                                )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowCategoryModal(false);
+                                        setNewCategory({ nama: '', deskripsi: '' });
+                                        setCategoryErrors({});
+                                    }}
+                                    disabled={savingCategory}
+                                    className="flex-1 px-6 py-3 bg-white text-gray-700 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleCreateCategory}
+                                    disabled={savingCategory}
+                                    className="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {savingCategory ? 'Menyimpan...' : 'Simpan'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 

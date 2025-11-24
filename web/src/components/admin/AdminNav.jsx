@@ -1,4 +1,4 @@
-import { LayoutDashboard, Plus, List } from 'lucide-react';
+import { LayoutDashboard, Plus, List, Star } from 'lucide-react';
 
 /**
  * AdminNav Component
@@ -8,7 +8,8 @@ const AdminNav = ({ currentPath }) => {
     const adminNavItems = [
         { path: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
         { path: '/admin/berita/create', icon: Plus, label: 'Buat Berita' },
-        { path: '/admin/berita', icon: List, label: 'Kelola Berita' }
+        { path: '/admin/berita', icon: List, label: 'Kelola Berita' },
+        { path: '/admin/featured', icon: Star, label: 'Berita Unggulan' }
     ];
 
     const isActive = (path) => currentPath === path;
@@ -21,8 +22,8 @@ const AdminNav = ({ currentPath }) => {
                         key={item.path}
                         href={`#${item.path}`}
                         className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap ${isActive(item.path)
-                                ? 'border-primary-600 text-primary-600 font-semibold'
-                                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                            ? 'border-primary-600 text-primary-600 font-semibold'
+                            : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
                             }`}
                     >
                         <item.icon className="w-5 h-5" />

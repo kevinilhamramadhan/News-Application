@@ -120,38 +120,6 @@ const AdminDashboardPage = () => {
                             </div>
                         </div>
 
-                        {/* Quick Actions */}
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-                            <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <a
-                                    href="#/admin/berita/create"
-                                    className="flex items-center gap-3 p-4 bg-primary-50 border-2 border-primary-200 rounded-lg hover:bg-primary-100 transition-colors group"
-                                >
-                                    <div className="bg-primary-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                                        <Plus className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-gray-900">Buat Berita Baru</p>
-                                        <p className="text-sm text-gray-600">Tulis dan publish berita</p>
-                                    </div>
-                                </a>
-
-                                <a
-                                    href="#/admin/berita"
-                                    className="flex items-center gap-3 p-4 bg-gray-50 border-2 border-gray-200 rounded-lg hover:bg-gray-100 transition-colors group"
-                                >
-                                    <div className="bg-gray-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                                        <TrendingUp className="w-6 h-6 text-white" />
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-gray-900">Kelola Berita</p>
-                                        <p className="text-sm text-gray-600">Edit atau hapus berita</p>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-
                         {/* Recent Berita */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                             <div className="p-6 border-b border-gray-200">
@@ -167,7 +135,7 @@ const AdminDashboardPage = () => {
                                         <div key={item.id} className="p-4 hover:bg-gray-50 transition-colors">
                                             <div className="flex gap-4">
                                                 <img
-                                                    src={getImageUrl(item.gambar)}
+                                                    src={getImageUrl(item.gambar_url)}
                                                     alt={item.judul}
                                                     className="w-24 h-24 object-cover rounded flex-shrink-0"
                                                 />
@@ -185,8 +153,8 @@ const AdminDashboardPage = () => {
                                                         </span>
                                                         <span>{formatDate(item.created_at)}</span>
                                                         <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${item.status === 'published'
-                                                                ? 'bg-green-100 text-green-800'
-                                                                : 'bg-yellow-100 text-yellow-800'
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-yellow-100 text-yellow-800'
                                                             }`}>
                                                             {item.status === 'published' ? 'Published' : 'Draft'}
                                                         </span>

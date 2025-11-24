@@ -14,6 +14,7 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminBeritaPage from './pages/AdminBeritaPage';
 import AdminCreateBeritaPage from './pages/AdminCreateBeritaPage';
 import AdminEditBeritaPage from './pages/AdminEditBeritaPage';
+import AdminFeaturedPage from './pages/AdminFeaturedPage';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '/');
@@ -59,6 +60,10 @@ function App() {
 
     if (currentPath === '/admin/berita') {
       return <AdminBeritaPage />;
+    }
+
+    if (currentPath === '/admin/featured') {
+      return <AdminFeaturedPage />;
     }
 
     // Berita list

@@ -200,7 +200,7 @@ const BeritaList = () => {
                                     <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-4 py-3">
                                             <img
-                                                src={getImageUrl(item.gambar)}
+                                                src={getImageUrl(item.gambar_url)}
                                                 alt={item.judul}
                                                 className="w-16 h-16 object-cover rounded"
                                             />
@@ -220,8 +220,8 @@ const BeritaList = () => {
                                         </td>
                                         <td className="px-4 py-3">
                                             <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${item.status === 'published'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-yellow-100 text-yellow-800'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-yellow-100 text-yellow-800'
                                                 }`}>
                                                 {item.status === 'published' ? 'Published' : 'Draft'}
                                             </span>
@@ -265,7 +265,7 @@ const BeritaList = () => {
                             <div key={item.id} className="p-4">
                                 <div className="flex gap-3">
                                     <img
-                                        src={getImageUrl(item.gambar)}
+                                        src={getImageUrl(item.gambar_url)}
                                         alt={item.judul}
                                         className="w-20 h-20 object-cover rounded flex-shrink-0"
                                     />
@@ -278,8 +278,8 @@ const BeritaList = () => {
                                         </p>
                                         <div className="flex items-center gap-2 mb-2">
                                             <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded-full ${item.status === 'published'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-yellow-100 text-yellow-800'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-yellow-100 text-yellow-800'
                                                 }`}>
                                                 {item.status === 'published' ? 'Published' : 'Draft'}
                                             </span>

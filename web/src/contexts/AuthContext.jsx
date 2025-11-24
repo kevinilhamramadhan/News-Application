@@ -54,21 +54,16 @@ export const AuthProvider = ({ children }) => {
             } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 if (session?.user) {
                     try {
-                        // Fetch user profile from database with 2s timeout
-                        const profilePromise = supabase
+                        // Fetch user profile with longer timeout
+                        const { data: profile, error: profileError } = await supabase
                             .from('users')
                             .select('*')
                             .eq('id', session.user.id)
                             .single();
 
-                        const timeoutPromise = new Promise((_, reject) =>
-                            setTimeout(() => reject(new Error('timeout')), 2000)
-                        );
-
-                        const { data: profile } = await Promise.race([
-                            profilePromise,
-                            timeoutPromise
-                        ]).catch(() => ({ data: null }));
+                        if (profileError) {
+                            console.error('Profile fetch error:', profileError);
+                        }
 
                         const userData = {
                             ...session.user,
@@ -79,7 +74,8 @@ export const AuthProvider = ({ children }) => {
                         setUser(userData);
                         setIsAdmin(userData.role === 'admin');
                     } catch (error) {
-                        // Set user without profile if error
+                        console.error('Error setting user:', error);
+                        // Set user with auth data even if profile fails
                         const userData = {
                             ...session.user,
                             profile: null,

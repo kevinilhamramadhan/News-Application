@@ -11,12 +11,17 @@ const BottomNav = ({ currentPath }) => {
     const { openLoginModal } = useAuthModal();
 
     // Navigation items for all users
-    const publicNavItems = [
+    const allNavItems = [
         { path: '/', icon: Home, label: 'Beranda' },
         { path: '/berita', icon: Newspaper, label: 'Berita' },
         { path: '/kategori', icon: Folder, label: 'Kategori' },
         { path: '/bookmark', icon: Bookmark, label: 'Bookmark' }
     ];
+
+    // Filter out bookmark for admin users
+    const publicNavItems = isAdmin
+        ? allNavItems.filter(item => item.path !== '/bookmark')
+        : allNavItems;
 
     // Check if path is active
     const isActive = (path) => {

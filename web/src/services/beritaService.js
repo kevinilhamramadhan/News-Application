@@ -9,8 +9,7 @@ export const beritaService = {
             let query = supabase
                 .from('berita')
                 .select('*, kategori:kategori_id(*), users!berita_author_id_fkey(full_name, email)', { count: 'exact' })
-                .eq('status', 'published')
-                .order('created_at', { ascending: false });
+                .eq('status', 'published');
 
             // Apply filters if provided
             if (params.kategori_id) {
@@ -19,6 +18,16 @@ export const beritaService = {
 
             if (params.search) {
                 query = query.ilike('judul', `%${params.search}%`);
+            }
+
+            // Apply sorting
+            if (params.sort === 'popular') {
+                query = query.order('views', { ascending: false });
+            } else if (params.sort === 'oldest') {
+                query = query.order('created_at', { ascending: true });
+            } else {
+                // Default: newest
+                query = query.order('created_at', { ascending: false });
             }
 
             // Pagination
@@ -158,6 +167,29 @@ export const beritaService = {
         } catch (error) {
             console.error('Get berita by kategori error:', error);
             throw error;
+        }
+    },
+
+    /**
+     * Get featured berita for homepage hero
+     * Returns up to 5 featured news items
+     */
+    getFeatured: async () => {
+        try {
+            const { data, error } = await supabase
+                .from('berita')
+                .select('*, kategori:kategori_id(*), users!berita_author_id_fkey(full_name, email)')
+                .eq('status', 'published')
+                .eq('is_featured', true)
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (error) throw error;
+
+            return { data: data || [] };
+        } catch (error) {
+            console.error('Get featured berita error:', error);
+            return { data: [] };
         }
     },
 };

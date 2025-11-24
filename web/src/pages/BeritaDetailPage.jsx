@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Star, Bookmark, Share2, ChevronLeft } from 'lucide-react';
+import { Calendar, Star, Bookmark, Share2, ChevronLeft, Eye } from 'lucide-react';
 import { useBeritaDetail } from '../hooks/useBerita';
 import { useBookmark } from '../hooks/useBookmark';
+import { useAuth } from '../hooks/useAuth';
 import { formatDate, shareContent, getImageUrl } from '../utils/helpers';
 import BeritaGrid from '../components/berita/BeritaGrid';
 import Skeleton from '../components/common/Skeleton';
@@ -10,6 +11,7 @@ import Toast from '../components/common/Toast';
 const BeritaDetailPage = ({ id }) => {
     const { berita, loading, error } = useBeritaDetail(id);
     const { bookmarks, toggleBookmark } = useBookmark();
+    const { isAdmin } = useAuth();
     const [relatedBerita, setRelatedBerita] = useState([]);
     const [toast, setToast] = useState(null);
 
@@ -97,24 +99,24 @@ const BeritaDetailPage = ({ id }) => {
                 <span>Kembali</span>
             </button>
 
-            {/* Main Image */}
-            <div className="relative h-96 rounded-lg overflow-hidden mb-8">
-                <img
-                    src={getImageUrl(berita.gambar)}
-                    alt={berita.judul}
-                    className="w-full h-full object-cover"
-                />
-            </div>
-
-            {/* Content */}
+            {/* Article Container with consistent max-width */}
             <article className="max-w-4xl mx-auto">
+                {/* Main Image */}
+                <div className="relative h-96 rounded-xl overflow-hidden mb-8 shadow-lg">
+                    <img
+                        src={getImageUrl(berita.gambar_url)}
+                        alt={berita.judul}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+
                 {/* Category */}
                 <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 text-sm font-semibold rounded-full mb-4">
                     {berita.kategori?.nama || 'Umum'}
                 </span>
 
                 {/* Title */}
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
                     {berita.judul}
                 </h1>
 
@@ -122,7 +124,11 @@ const BeritaDetailPage = ({ id }) => {
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6 pb-6 border-b border-gray-200">
                     <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        <span>{formatDate(berita.createdAt || berita.tanggal)}</span>
+                        <span>{formatDate(berita.created_at)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Eye className="w-4 h-4" />
+                        <span>{berita.views || 0} views</span>
                     </div>
                     {berita.rating && (
                         <div className="flex items-center gap-2">
@@ -134,16 +140,19 @@ const BeritaDetailPage = ({ id }) => {
 
                 {/* Actions */}
                 <div className="flex gap-3 mb-8">
-                    <button
-                        onClick={handleBookmarkToggle}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isBookmarked
-                            ? 'bg-primary-600 text-white hover:bg-primary-700'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                    >
-                        <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
-                        <span>{isBookmarked ? 'Tersimpan' : 'Simpan'}</span>
-                    </button>
+                    {/* Only show bookmark button for non-admin users */}
+                    {!isAdmin && (
+                        <button
+                            onClick={handleBookmarkToggle}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${isBookmarked
+                                ? 'bg-primary-600 text-white hover:bg-primary-700'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                        >
+                            <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
+                            <span>{isBookmarked ? 'Tersimpan' : 'Simpan'}</span>
+                        </button>
+                    )}
                     <button
                         onClick={handleShare}
                         className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition-colors"
@@ -170,6 +179,7 @@ const BeritaDetailPage = ({ id }) => {
                             berita={relatedBerita}
                             onBookmarkToggle={(id) => toggleBookmark(id)}
                             bookmarkedIds={bookmarks}
+                            showBookmarkButton={!isAdmin}
                         />
                     </section>
                 )}

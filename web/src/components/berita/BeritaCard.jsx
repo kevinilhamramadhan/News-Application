@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Calendar, Star, Bookmark, Image as ImageIcon } from 'lucide-react';
+import { Calendar, Star, Bookmark, Eye, Image as ImageIcon } from 'lucide-react';
 import { formatRelativeTime, truncateText, getImageUrl } from '../../utils/helpers';
 import { useAuthModal } from '../../hooks/useAuthModal';
 
-const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false, requireAuth = false }) => {
+const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false, requireAuth = false, showBookmarkButton = true }) => {
     const [imageError, setImageError] = useState(false);
     const { openLoginModal } = useAuthModal();
 
@@ -38,9 +38,9 @@ const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false, requireAut
         >
             {/* Image */}
             <div className="relative h-48 overflow-hidden bg-gray-100">
-                {!imageError && berita.gambar ? (
+                {!imageError && berita.gambar_url ? (
                     <img
-                        src={getImageUrl(berita.gambar)}
+                        src={getImageUrl(berita.gambar_url)}
                         alt={berita.judul}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         loading="lazy"
@@ -53,17 +53,19 @@ const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false, requireAut
                     </div>
                 )}
 
-                {/* Bookmark Button */}
-                <button
-                    onClick={handleBookmarkClick}
-                    className={`absolute top-3 right-3 p-2 rounded-full shadow-lg transition-all ${isBookmarked
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-white/90 text-gray-700 hover:bg-white'
-                        }`}
-                    title={requireAuth ? 'Login untuk bookmark' : isBookmarked ? 'Hapus dari bookmark' : 'Tambah ke bookmark'}
-                >
-                    <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
-                </button>
+                {/* Bookmark Button - Only show if showBookmarkButton is true */}
+                {showBookmarkButton && (
+                    <button
+                        onClick={handleBookmarkClick}
+                        className={`absolute top-3 right-3 p-2 rounded-full shadow-lg transition-all ${isBookmarked
+                            ? 'bg-primary-600 text-white'
+                            : 'bg-white/90 text-gray-700 hover:bg-white'
+                            }`}
+                        title={requireAuth ? 'Login untuk bookmark' : isBookmarked ? 'Hapus dari bookmark' : 'Tambah ke bookmark'}
+                    >
+                        <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
+                    </button>
+                )}
             </div>
 
             {/* Content */}
@@ -91,6 +93,10 @@ const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false, requireAut
                         <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             <span>{formatRelativeTime(berita.created_at || berita.createdAt || berita.tanggal)}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <Eye className="w-4 h-4" />
+                            <span>{berita.views || 0}</span>
                         </div>
                     </div>
                     {berita.rating && (
