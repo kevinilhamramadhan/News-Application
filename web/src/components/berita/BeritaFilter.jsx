@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter } from 'lucide-react';
 import { debounce } from '../../utils/helpers';
-import { SORT_OPTIONS, STATUS_OPTIONS } from '../../utils/constants';
+import { SORT_OPTIONS } from '../../utils/constants';
 
 const BeritaFilter = ({ onFilterChange, kategoriList = [] }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedKategori, setSelectedKategori] = useState('');
-    const [selectedStatus, setSelectedStatus] = useState('all');
     const [selectedSort, setSelectedSort] = useState('newest');
     const [showFilters, setShowFilters] = useState(false);
 
@@ -16,13 +15,12 @@ const BeritaFilter = ({ onFilterChange, kategoriList = [] }) => {
             onFilterChange({
                 search: searchTerm,
                 kategori: selectedKategori,
-                status: selectedStatus === 'all' ? '' : selectedStatus,
                 sort: selectedSort,
             });
         }, 500);
 
         debouncedSearch();
-    }, [searchTerm, selectedKategori, selectedStatus, selectedSort]);
+    }, [searchTerm, selectedKategori, selectedSort]);
 
     return (
         <div className="bg-white rounded-lg shadow-md p-4 mb-6">
@@ -61,19 +59,6 @@ const BeritaFilter = ({ onFilterChange, kategoriList = [] }) => {
                     {kategoriList.map((kat) => (
                         <option key={kat.id} value={kat.id}>
                             {kat.nama}
-                        </option>
-                    ))}
-                </select>
-
-                {/* Status Filter */}
-                <select
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                >
-                    {STATUS_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
                         </option>
                     ))}
                 </select>

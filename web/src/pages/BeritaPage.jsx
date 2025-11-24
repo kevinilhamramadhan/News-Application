@@ -11,7 +11,6 @@ const BeritaPage = () => {
     const [filters, setFilters] = useState({
         search: '',
         kategori: '',
-        status: '',
         sort: 'newest',
         page: 1,
         limit: ITEMS_PER_PAGE,
@@ -19,7 +18,7 @@ const BeritaPage = () => {
 
     const { berita, loading, error, pagination } = useBerita(filters);
     const { kategori } = useKategori();
-    const { bookmarks, toggleBookmark } = useBookmark();
+    const { bookmarks, toggleBookmark, isAuthenticated } = useBookmark();
 
     const handleFilterChange = (newFilters) => {
         setFilters((prev) => ({
@@ -34,8 +33,16 @@ const BeritaPage = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleBookmarkToggle = (beritaId) => {
-        toggleBookmark(beritaId);
+    const handleBookmarkToggle = async (beritaId) => {
+        try {
+            await toggleBookmark(beritaId);
+        } catch (error) {
+            if (error.message === 'AUTH_REQUIRED') {
+                // Error handled by BeritaCard
+                return;
+            }
+            console.error('Bookmark toggle error:', error);
+        }
     };
 
     return (
@@ -60,6 +67,7 @@ const BeritaPage = () => {
                 error={error}
                 onBookmarkToggle={handleBookmarkToggle}
                 bookmarkedIds={bookmarks}
+                requireAuth={!isAuthenticated}
             />
 
             {/* Pagination */}
@@ -91,8 +99,8 @@ const BeritaPage = () => {
                                     <button
                                         onClick={() => handlePageChange(page)}
                                         className={`w-10 h-10 rounded-lg font-medium transition-colors ${page === pagination.currentPage
-                                                ? 'bg-primary-600 text-white'
-                                                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                            ? 'bg-primary-600 text-white'
+                                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
                                             }`}
                                     >
                                         {page}

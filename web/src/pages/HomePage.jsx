@@ -8,7 +8,7 @@ import { getImageUrl } from '../utils/helpers';
 
 const HomePage = () => {
     const { berita: popularBerita, loading: loadingPopular } = useBeritaPopular(6);
-    const { bookmarks, toggleBookmark } = useBookmark();
+    const { bookmarks, toggleBookmark, isAuthenticated } = useBookmark();
     const [heroBerita, setHeroBerita] = useState(null);
 
     useEffect(() => {
@@ -17,8 +17,16 @@ const HomePage = () => {
         }
     }, [popularBerita]);
 
-    const handleBookmarkToggle = (beritaId) => {
-        toggleBookmark(beritaId);
+    const handleBookmarkToggle = async (beritaId) => {
+        try {
+            await toggleBookmark(beritaId);
+        } catch (error) {
+            if (error.message === 'AUTH_REQUIRED') {
+                // Error is handled by BeritaCard showing auth prompt
+                return;
+            }
+            console.error('Bookmark toggle error:', error);
+        }
     };
 
     return (
@@ -36,6 +44,10 @@ const HomePage = () => {
                             src={getImageUrl(heroBerita.gambar)}
                             alt={heroBerita.judul}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.parentElement.classList.add('bg-gradient-to-br', 'from-gray-200', 'to-gray-300');
+                            }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
@@ -46,7 +58,7 @@ const HomePage = () => {
                                 {heroBerita.judul}
                             </h1>
                             <p className="text-lg text-gray-200 mb-4 line-clamp-2">
-                                {heroBerita.konten?.substring(0, 150)}...
+                                {heroBerita.konten?.substring(0, 150) || heroBerita.ringkasan?.substring(0, 150)}...
                             </p>
                             <div className="flex items-center gap-4 text-sm">
                                 <span>{heroBerita.kategori?.nama}</span>
@@ -75,6 +87,7 @@ const HomePage = () => {
                     loading={loadingPopular}
                     onBookmarkToggle={handleBookmarkToggle}
                     bookmarkedIds={bookmarks}
+                    requireAuth={!isAuthenticated}
                 />
             </section>
 
@@ -89,6 +102,7 @@ const HomePage = () => {
                     loading={loadingPopular}
                     onBookmarkToggle={handleBookmarkToggle}
                     bookmarkedIds={bookmarks}
+                    requireAuth={!isAuthenticated}
                 />
             </section>
 

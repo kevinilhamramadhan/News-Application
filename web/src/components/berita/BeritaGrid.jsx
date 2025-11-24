@@ -1,7 +1,7 @@
 import BeritaCard from './BeritaCard';
 import Skeleton from '../common/Skeleton';
 
-const BeritaGrid = ({ berita, loading, error, onBookmarkToggle, bookmarkedIds = [] }) => {
+const BeritaGrid = ({ berita, loading, error, onBookmarkToggle, bookmarkedIds = [], requireAuth = false }) => {
     if (loading) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -34,6 +34,7 @@ const BeritaGrid = ({ berita, loading, error, onBookmarkToggle, bookmarkedIds = 
                     berita={item}
                     onBookmarkToggle={onBookmarkToggle}
                     isBookmarked={bookmarkedIds.includes(item.id)}
+                    requireAuth={requireAuth}
                 />
             ))}
         </div>

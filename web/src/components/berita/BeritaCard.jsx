@@ -1,36 +1,62 @@
-import { Calendar, Eye, Star, Bookmark } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar, Eye, Star, Bookmark, Image as ImageIcon } from 'lucide-react';
 import { formatRelativeTime, truncateText, getImageUrl } from '../../utils/helpers';
+import { useAuthModal } from '../../hooks/useAuthModal';
 
-const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false }) => {
+const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false, requireAuth = false }) => {
+    const [imageError, setImageError] = useState(false);
+    const { openLoginModal } = useAuthModal();
+
     const handleCardClick = () => {
         window.location.hash = `/berita/${berita.id}`;
     };
 
-    const handleBookmarkClick = (e) => {
+    const handleBookmarkClick = async (e) => {
         e.stopPropagation();
+
+        // If bookmark requires auth and user clicks, show modal
+        if (requireAuth) {
+            openLoginModal();
+            return;
+        }
+
         onBookmarkToggle(berita.id);
+    };
+
+    const handleImageError = () => {
+        setImageError(true);
     };
 
     return (
         <div
             onClick={handleCardClick}
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group relative"
         >
             {/* Image */}
-            <div className="relative h-48 overflow-hidden">
-                <img
-                    src={getImageUrl(berita.gambar)}
-                    alt={berita.judul}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    loading="lazy"
-                />
+            <div className="relative h-48 overflow-hidden bg-gray-100">
+                {!imageError && berita.gambar ? (
+                    <img
+                        src={getImageUrl(berita.gambar)}
+                        alt={berita.judul}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        loading="lazy"
+                        onError={handleImageError}
+                    />
+                ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 text-gray-500">
+                        <ImageIcon className="w-16 h-16 mb-2" />
+                        <p className="text-sm font-medium">Tidak ada gambar</p>
+                    </div>
+                )}
+
                 {/* Bookmark Button */}
                 <button
                     onClick={handleBookmarkClick}
                     className={`absolute top-3 right-3 p-2 rounded-full shadow-lg transition-all ${isBookmarked
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-white/90 text-gray-700 hover:bg-white'
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-white/90 text-gray-700 hover:bg-white'
                         }`}
+                    title={requireAuth ? 'Login untuk bookmark' : isBookmarked ? 'Hapus dari bookmark' : 'Tambah ke bookmark'}
                 >
                     <Bookmark className={`w-5 h-5 ${isBookmarked ? 'fill-current' : ''}`} />
                 </button>
@@ -60,7 +86,7 @@ const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false }) => {
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            <span>{formatRelativeTime(berita.createdAt || berita.tanggal)}</span>
+                            <span>{formatRelativeTime(berita.created_at || berita.createdAt || berita.tanggal)}</span>
                         </div>
                         <div className="flex items-center gap-1">
                             <Eye className="w-4 h-4" />

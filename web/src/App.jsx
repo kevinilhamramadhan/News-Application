@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { AuthProvider } from './contexts/AuthContext';
+import { AuthModalProvider } from './contexts/AuthModalContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import BottomNav from './components/common/BottomNav';
 import HomePage from './pages/HomePage';
@@ -8,6 +10,12 @@ import KategoriPage from './pages/KategoriPage';
 import KategoriDetailPage from './pages/KategoriDetailPage';
 import BookmarkPage from './pages/BookmarkPage';
 import ProfilPage from './pages/ProfilPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminBeritaPage from './pages/AdminBeritaPage';
+import AdminCreateBeritaPage from './pages/AdminCreateBeritaPage';
+import AdminEditBeritaPage from './pages/AdminEditBeritaPage';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '/');
@@ -32,6 +40,36 @@ function App() {
     // Home
     if (currentPath === '/' || pathParts.length === 0) {
       return <HomePage />;
+    }
+
+    // Auth routes
+    if (currentPath === '/login') {
+      return <LoginPage />;
+    }
+
+    if (currentPath === '/register') {
+      return <RegisterPage />;
+    }
+
+    if (currentPath === '/profil') {
+      return <ProfilPage />;
+    }
+
+    // Admin routes
+    if (currentPath === '/admin/dashboard') {
+      return <AdminDashboardPage />;
+    }
+
+    if (currentPath === '/admin/berita/create') {
+      return <AdminCreateBeritaPage />;
+    }
+
+    if (pathParts[0] === 'admin' && pathParts[1] === 'berita' && pathParts[2] === 'edit' && pathParts[3]) {
+      return <AdminEditBeritaPage id={pathParts[3]} />;
+    }
+
+    if (currentPath === '/admin/berita') {
+      return <AdminBeritaPage />;
     }
 
     // Berita list
@@ -59,11 +97,6 @@ function App() {
       return <BookmarkPage />;
     }
 
-    // Profil
-    if (currentPath === '/profil') {
-      return <ProfilPage />;
-    }
-
     // 404
     return (
       <div className="text-center py-16">
@@ -80,17 +113,21 @@ function App() {
   };
 
   return (
-    <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
-        {/* Navigation */}
-        <BottomNav currentPath={currentPath} />
+    <AuthProvider>
+      <AuthModalProvider>
+        <ErrorBoundary>
+          <div className="min-h-screen bg-gray-50">
+            {/* Navigation */}
+            <BottomNav currentPath={currentPath} />
 
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pb-20 md:pb-8">
-          {renderPage()}
-        </main>
-      </div>
-    </ErrorBoundary>
+            {/* Main Content */}
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pb-20 md:pb-8">
+              {renderPage()}
+            </main>
+          </div>
+        </ErrorBoundary>
+      </AuthModalProvider>
+    </AuthProvider>
   );
 }
 

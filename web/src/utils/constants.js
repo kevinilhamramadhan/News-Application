@@ -8,6 +8,12 @@ export const ROUTES = {
     KATEGORI_DETAIL: '/kategori/:slug',
     BOOKMARK: '/bookmark',
     PROFIL: '/profil',
+    LOGIN: '/login',
+    REGISTER: '/register',
+    ADMIN_DASHBOARD: '/admin/dashboard',
+    ADMIN_BERITA: '/admin/berita',
+    ADMIN_BERITA_CREATE: '/admin/berita/create',
+    ADMIN_BERITA_EDIT: '/admin/berita/edit/:id',
 };
 
 export const ITEMS_PER_PAGE = 9;
