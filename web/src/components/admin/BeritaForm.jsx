@@ -104,9 +104,9 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
             return;
         }
 
-        // Validate file size (max 5MB)
+        // Validate file size (max 1MB)
         if (file.size > 5 * 1024 * 1024) {
-            setErrors(prev => ({ ...prev, gambar: 'Ukuran file maksimal 5MB' }));
+            setErrors(prev => ({ ...prev, gambar: 'Ukuran file maksimal 1MB' }));
             return;
         }
 

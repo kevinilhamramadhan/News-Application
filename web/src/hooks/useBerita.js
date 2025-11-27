@@ -13,8 +13,15 @@ export const useBerita = (params = {}) => {
                 setLoading(true);
                 setError(null);
                 const response = await beritaService.getAll(params);
-                setBerita(response.data.data || response.data);
-                setPagination(response.data.pagination);
+                // beritaService.getAll returns { data, count, page, limit }
+                setBerita(response.data || []);
+                // Build pagination from response
+                setPagination({
+                    currentPage: response.page,
+                    totalPages: Math.ceil((response.count || 0) / (response.limit || 1)),
+                    total: response.count,
+                    limit: response.limit
+                });
             } catch (err) {
                 setError(err.message || 'Gagal memuat berita');
                 setBerita([]);
@@ -42,7 +49,8 @@ export const useBeritaDetail = (id) => {
                 setLoading(true);
                 setError(null);
                 const response = await beritaService.getById(id);
-                setBerita(response.data.data || response.data);
+                // beritaService.getById returns { data }
+                setBerita(response.data || null);
             } catch (err) {
                 setError(err.message || 'Gagal memuat detail berita');
                 setBerita(null);
@@ -68,7 +76,8 @@ export const useBeritaPopular = (limit = 6) => {
                 setLoading(true);
                 setError(null);
                 const response = await beritaService.getPopular(limit);
-                setBerita(response.data.data || response.data);
+                // beritaService.getPopular returns { data }
+                setBerita(response.data || []);
             } catch (err) {
                 setError(err.message || 'Gagal memuat berita populer');
                 setBerita([]);

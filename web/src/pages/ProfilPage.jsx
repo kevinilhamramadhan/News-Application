@@ -137,20 +137,6 @@ const ProfilPage = () => {
                             )}
                         </div>
 
-                        {/* Role (Read-only) */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                <Shield className="w-4 h-4 inline mr-2" />
-                                Role
-                            </label>
-                            <input
-                                type="text"
-                                value={user?.role === 'admin' ? 'Administrator' : 'User'}
-                                disabled
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-600 cursor-not-allowed"
-                            />
-                        </div>
-
                         {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
                             {isEditing ? (

@@ -4,6 +4,8 @@ import { adminService } from '../services/adminService';
 import { supabase } from '../config/supabase';
 import { getImageUrl, formatRelativeTime } from '../utils/helpers';
 import Toast from '../components/common/Toast';
+import ProtectedRoute from '../components/common/ProtectedRoute';
+import AdminNav from '../components/admin/AdminNav';
 
 /**
  * AdminFeaturedPage - Manage featured news (max 5)
@@ -66,105 +68,112 @@ const AdminFeaturedPage = () => {
     );
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Kelola Berita Unggulan</h1>
-                    <p className="text-gray-600 mt-1">Tandai hingga 5 berita untuk ditampilkan di carousel homepage</p>
-                </div>
-                <div className="flex items-center gap-3 px-4 py-2 bg-primary-50 border border-primary-200 rounded-lg">
-                    <Star className="w-5 h-5 text-primary-600 fill-current" />
-                    <span className="font-semibold text-primary-900">
-                        {featuredCount}/5 Berita Unggulan
-                    </span>
-                </div>
-            </div>
+        <ProtectedRoute requireAdmin>
+            <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-6">Kelola Berita Unggulan</h1>
 
-            {/* Warning */}
-            {featuredCount >= 5 && (
-                <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                        <p className="font-medium text-yellow-900">Batas Maksimal Tercapai</p>
-                        <p className="text-sm text-yellow-700 mt-1">
-                            Anda sudah menandai 5 berita unggulan. Hapus salah satu untuk menambah yang baru.
-                        </p>
+                <AdminNav currentPath="/admin/featured" />
+
+                <div className="space-y-6">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-gray-600 mt-1">Tandai hingga 5 berita untuk ditampilkan di carousel homepage</p>
+                        </div>
+                        <div className="flex items-center gap-3 px-4 py-2 bg-primary-50 border border-primary-200 rounded-lg">
+                            <Star className="w-5 h-5 text-primary-600 fill-current" />
+                            <span className="font-semibold text-primary-900">
+                                {featuredCount}/5 Berita Unggulan
+                            </span>
+                        </div>
                     </div>
-                </div>
-            )}
 
-            {/* Search */}
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Cari berita..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
-                </div>
-            </div>
+                    {/* Warning */}
+                    {featuredCount >= 5 && (
+                        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p className="font-medium text-yellow-900">Batas Maksimal Tercapai</p>
+                                <p className="text-sm text-yellow-700 mt-1">
+                                    Anda sudah menandai 5 berita unggulan. Hapus salah satu untuk menambah yang baru.
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
-            {/* Featured News Section */}
-            {featuredBerita.length > 0 && (
-                <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-6 rounded-lg border border-primary-200">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <Star className="w-5 h-5 text-primary-600 fill-current" />
-                        Berita Unggulan Aktif
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {featuredBerita.map((berita) => (
-                            <NewsCard
-                                key={berita.id}
-                                berita={berita}
-                                isFeatured={true}
-                                onToggle={handleToggleFeatured}
+                    {/* Search */}
+                    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Cari berita..."
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                             />
-                        ))}
+                        </div>
                     </div>
+
+                    {/* Featured News Section */}
+                    {featuredBerita.length > 0 && (
+                        <div className="bg-gradient-to-r from-primary-50 to-blue-50 p-6 rounded-lg border border-primary-200">
+                            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <Star className="w-5 h-5 text-primary-600 fill-current" />
+                                Berita Unggulan Aktif
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {featuredBerita.map((berita) => (
+                                    <NewsCard
+                                        key={berita.id}
+                                        berita={berita}
+                                        isFeatured={true}
+                                        onToggle={handleToggleFeatured}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* All News List */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">Semua Berita Published</h2>
+
+                        {loading ? (
+                            <div className="text-center py-12">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+                                <p className="text-gray-600">Memuat berita...</p>
+                            </div>
+                        ) : filteredBerita.length === 0 ? (
+                            <div className="text-center py-12">
+                                <p className="text-gray-600">Tidak ada berita ditemukan</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {filteredBerita.map((berita) => (
+                                    <NewsCard
+                                        key={berita.id}
+                                        berita={berita}
+                                        isFeatured={berita.is_featured}
+                                        onToggle={handleToggleFeatured}
+                                        disabled={!berita.is_featured && featuredCount >= 5}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Toast */}
+                    {toast && (
+                        <Toast
+                            message={toast.message}
+                            type={toast.type}
+                            onClose={() => setToast(null)}
+                        />
+                    )}
                 </div>
-            )}
-
-            {/* All News List */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 className="text-lg font-bold text-gray-900 mb-4">Semua Berita Published</h2>
-
-                {loading ? (
-                    <div className="text-center py-12">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-                        <p className="text-gray-600">Memuat berita...</p>
-                    </div>
-                ) : filteredBerita.length === 0 ? (
-                    <div className="text-center py-12">
-                        <p className="text-gray-600">Tidak ada berita ditemukan</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredBerita.map((berita) => (
-                            <NewsCard
-                                key={berita.id}
-                                berita={berita}
-                                isFeatured={berita.is_featured}
-                                onToggle={handleToggleFeatured}
-                                disabled={!berita.is_featured && featuredCount >= 5}
-                            />
-                        ))}
-                    </div>
-                )}
             </div>
-
-            {/* Toast */}
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast(null)}
-                />
-            )}
-        </div>
+        </ProtectedRoute>
     );
 };
 

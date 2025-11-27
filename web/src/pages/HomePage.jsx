@@ -122,7 +122,7 @@ const HomePage = () => {
         <div className="page-transition">
             {/* Hero Section - Carousel */}
             <section className="mb-12">
-                {(loadingFeatured || loadingPopular || !currentHeroBerita) ? (
+                {(loadingFeatured || !currentHeroBerita) ? (
                     <Skeleton variant="hero" count={1} />
                 ) : (
                     <div
@@ -206,8 +206,8 @@ const HomePage = () => {
                                                 handleDotClick(index);
                                             }}
                                             className={`w - 2 h - 2 rounded - full transition - all ${index === currentSlide
-                                                    ? 'bg-white w-8'
-                                                    : 'bg-white/50 hover:bg-white/75'
+                                                ? 'bg-white w-8'
+                                                : 'bg-white/50 hover:bg-white/75'
                                                 } `}
                                             aria-label={`Go to slide ${index + 1} `}
                                         />

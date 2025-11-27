@@ -48,8 +48,8 @@ const RegisterForm = ({ onSuccess, onSwitchToLogin, isModal = false }) => {
 
         if (!formData.password) {
             newErrors.password = 'Password harus diisi';
-        } else if (formData.password.length < 6) {
-            newErrors.password = 'Password minimal 6 karakter';
+        } else if (formData.password.length < 8) {
+            newErrors.password = 'Password minimal 8 karakter';
         }
 
         if (!formData.confirmPassword) {
@@ -211,7 +211,7 @@ const RegisterForm = ({ onSuccess, onSwitchToLogin, isModal = false }) => {
                 {errors.password && (
                     <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                 )}
-                <p className="mt-1 text-sm text-gray-500">Minimal 6 karakter</p>
+                <p className="mt-1 text-sm text-gray-500">Minimal 8 karakter</p>
             </div>
 
             {/* Confirm Password Field */}
