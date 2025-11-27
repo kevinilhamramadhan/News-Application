@@ -3,6 +3,9 @@ import { AuthProvider } from './contexts/AuthContext';
 import { AuthModalProvider } from './contexts/AuthModalContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import BottomNav from './components/common/BottomNav';
+import InstallPWA from './components/common/InstallPWA';
+import OnlineStatus from './components/common/OnlineStatus';
+import OfflinePage from './components/common/OfflinePage';
 import HomePage from './pages/HomePage';
 import BeritaPage from './pages/BeritaPage';
 import BeritaDetailPage from './pages/BeritaDetailPage';
@@ -18,6 +21,7 @@ import AdminFeaturedPage from './pages/AdminFeaturedPage';
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '/');
+  const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -31,6 +35,38 @@ function App() {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  // Service Worker registration and update handling
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      // Listen for service worker updates
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('Service worker updated');
+        setUpdateAvailable(true);
+      });
+
+      // Check for updates periodically
+      const checkForUpdates = async () => {
+        try {
+          const registration = await navigator.serviceWorker.getRegistration();
+          if (registration) {
+            await registration.update();
+          }
+        } catch (error) {
+          console.error('Error checking for updates:', error);
+        }
+      };
+
+      // Check for updates every 60 minutes
+      const updateInterval = setInterval(checkForUpdates, 60 * 60 * 1000);
+
+      return () => clearInterval(updateInterval);
+    }
+  }, []);
+
+  const handleUpdate = () => {
+    window.location.reload();
+  };
 
   const renderPage = () => {
     // Parse path and params
@@ -91,6 +127,11 @@ function App() {
       return <BookmarkPage />;
     }
 
+    // Offline page
+    if (currentPath === '/offline') {
+      return <OfflinePage />;
+    }
+
     // 404
     return (
       <div className="text-center py-16">
@@ -111,8 +152,34 @@ function App() {
       <AuthModalProvider>
         <ErrorBoundary>
           <div className="min-h-screen bg-gray-50">
-            {/* Navigation */}
-            <BottomNav currentPath={currentPath} />
+            {/* Sticky Header Container - stays at top on desktop */}
+            <div className="sticky top-0 z-50">
+              {/* PWA Status Banner */}
+              <OnlineStatus />
+
+              {/* Navigation - will be below banner when it appears */}
+              <BottomNav currentPath={currentPath} />
+            </div>
+
+            {/* PWA Install Prompt */}
+            <InstallPWA />
+
+            {/* Update Available Banner */}
+            {updateAvailable && (
+              <div className="sticky top-0 left-0 right-0 bg-blue-600 text-white py-3 px-4 z-40 shadow-lg">
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    Update tersedia! Reload untuk mendapatkan versi terbaru.
+                  </span>
+                  <button
+                    onClick={handleUpdate}
+                    className="bg-white text-blue-600 px-4 py-1 rounded-lg text-sm font-semibold hover:bg-blue-50 transition-colors"
+                  >
+                    Reload
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pb-20 md:pb-8">

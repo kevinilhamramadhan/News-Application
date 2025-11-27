@@ -11,10 +11,39 @@ export const useKategori = () => {
             try {
                 setLoading(true);
                 setError(null);
+
+                // Check if offline before fetching
+                if (!navigator.onLine) {
+                    setError({
+                        message: 'Anda sedang offline',
+                        isOffline: true,
+                        description: 'Data kategori tidak tersedia saat offline. Silakan coba lagi ketika koneksi internet tersambung.'
+                    });
+                    setKategori([]);
+                    setLoading(false);
+                    return;
+                }
+
                 const response = await kategoriService.getAll();
                 setKategori(response.data.data || response.data);
             } catch (err) {
-                setError(err.message || 'Gagal memuat kategori');
+                // Check if error is due to network issue
+                const isNetworkError = err.message?.includes('Network') ||
+                    err.message?.includes('Failed to fetch') ||
+                    !navigator.onLine;
+
+                if (isNetworkError) {
+                    setError({
+                        message: 'Anda sedang offline',
+                        isOffline: true,
+                        description: 'Data kategori belum tersimpan di cache. Silakan sambungkan ke internet untuk melihat kategori.'
+                    });
+                } else {
+                    setError({
+                        message: err.message || 'Gagal memuat kategori',
+                        isOffline: false
+                    });
+                }
                 setKategori([]);
             } finally {
                 setLoading(false);
@@ -39,10 +68,39 @@ export const useKategoriDetail = (slug) => {
             try {
                 setLoading(true);
                 setError(null);
+
+                // Check if offline before fetching
+                if (!navigator.onLine) {
+                    setError({
+                        message: 'Anda sedang offline',
+                        isOffline: true,
+                        description: 'Data kategori ini tidak tersedia saat offline.'
+                    });
+                    setKategori(null);
+                    setLoading(false);
+                    return;
+                }
+
                 const response = await kategoriService.getBySlug(slug);
                 setKategori(response.data.data || response.data);
             } catch (err) {
-                setError(err.message || 'Gagal memuat detail kategori');
+                // Check if error is due to network issue
+                const isNetworkError = err.message?.includes('Network') ||
+                    err.message?.includes('Failed to fetch') ||
+                    !navigator.onLine;
+
+                if (isNetworkError) {
+                    setError({
+                        message: 'Anda sedang offline',
+                        isOffline: true,
+                        description: 'Kategori ini belum tersimpan di cache. Sambungkan ke internet untuk melihat kategori ini.'
+                    });
+                } else {
+                    setError({
+                        message: err.message || 'Gagal memuat detail kategori',
+                        isOffline: false
+                    });
+                }
                 setKategori(null);
             } finally {
                 setLoading(false);

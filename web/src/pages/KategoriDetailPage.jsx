@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, Folder } from 'lucide-react';
+import { ChevronLeft, Folder, AlertCircle } from 'lucide-react';
 import { useKategoriDetail } from '../hooks/useKategori';
 import { useBookmark } from '../hooks/useBookmark';
 import { beritaService } from '../services/beritaService';
@@ -20,10 +20,39 @@ const KategoriDetailPage = ({ slug }) => {
             try {
                 setLoadingBerita(true);
                 setErrorBerita(null);
+
+                // Check if offline before fetching
+                if (!navigator.onLine) {
+                    setErrorBerita({
+                        message: 'Anda sedang offline',
+                        isOffline: true,
+                        description: 'Data berita dalam kategori ini tidak tersedia saat offline.'
+                    });
+                    setBerita([]);
+                    setLoadingBerita(false);
+                    return;
+                }
+
                 const response = await beritaService.getByKategori(kategori.id);
                 setBerita(response.data.data || response.data);
             } catch (err) {
-                setErrorBerita(err.message || 'Gagal memuat berita');
+                // Check if error is due to network issue
+                const isNetworkError = err.message?.includes('Network') ||
+                    err.message?.includes('Failed to fetch') ||
+                    !navigator.onLine;
+
+                if (isNetworkError) {
+                    setErrorBerita({
+                        message: 'Anda sedang offline',
+                        isOffline: true,
+                        description: 'Data berita dalam kategori ini belum tersimpan di cache.'
+                    });
+                } else {
+                    setErrorBerita({
+                        message: err.message || 'Gagal memuat berita',
+                        isOffline: false
+                    });
+                }
                 setBerita([]);
             } finally {
                 setLoadingBerita(false);
@@ -54,14 +83,26 @@ const KategoriDetailPage = ({ slug }) => {
 
     if (errorKategori || !kategori) {
         return (
-            <div className="page-transition text-center py-12">
-                <p className="text-red-600 text-lg">{errorKategori || 'Kategori tidak ditemukan'}</p>
-                <button
-                    onClick={handleBack}
-                    className="mt-4 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                >
-                    Kembali ke Kategori
-                </button>
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+                <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
+                    <div className="mb-6">
+                        <div className="w-20 h-20 mx-auto rounded-full flex items-center justify-center bg-gradient-to-br from-red-100 to-orange-100">
+                            <AlertCircle className="w-10 h-10 text-red-600" strokeWidth={2} />
+                        </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                        Kategori Tidak Ditemukan
+                    </h3>
+                    <p className="text-gray-600 mb-6">
+                        {typeof errorKategori === 'string' ? errorKategori : 'Kategori yang Anda cari mungkin tidak ada atau telah dihapus.'}
+                    </p>
+                    <button
+                        onClick={handleBack}
+                        className="px-6 py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 transition-all"
+                    >
+                        Kembali ke Kategori
+                    </button>
+                </div>
             </div>
         );
     }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Star, Bookmark, Share2, ChevronLeft, Eye } from 'lucide-react';
+import { Calendar, Star, Bookmark, Share2, ChevronLeft, Eye, WifiOff, AlertCircle } from 'lucide-react';
 import { useBeritaDetail } from '../hooks/useBerita';
 import { useBookmark } from '../hooks/useBookmark';
 import { useAuth } from '../hooks/useAuth';
@@ -74,16 +74,76 @@ const BeritaDetailPage = ({ id }) => {
         );
     }
 
+    // Error state
     if (error || !berita) {
+        const currentError = error || { message: 'Berita tidak ditemukan', description: 'Berita yang Anda cari mungkin tidak ada atau telah dihapus.' };
+        const isOfflineError = typeof currentError === 'object' && currentError.isOffline;
+        const errorMessage = typeof currentError === 'string' ? currentError : currentError.message || 'Terjadi Kesalahan';
+        const errorDescription = typeof currentError === 'object' ? currentError.description : null;
+
         return (
-            <div className="page-transition text-center py-12">
-                <p className="text-red-600 text-lg">{error || 'Berita tidak ditemukan'}</p>
-                <button
-                    onClick={handleBack}
-                    className="mt-4 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
-                >
-                    Kembali
-                </button>
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
+                    <div className="mb-6">
+                        <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${isOfflineError
+                            ? 'bg-gradient-to-br from-blue-100 to-cyan-100'
+                            : 'bg-gradient-to-br from-red-100 to-orange-100'
+                            }`}>
+                            {isOfflineError ? (
+                                <WifiOff className="w-10 h-10 text-blue-600" strokeWidth={2} />
+                            ) : (
+                                <AlertCircle className="w-10 h-10 text-red-600" strokeWidth={2} />
+                            )}
+                        </div>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                        {errorMessage}
+                    </h3>
+
+                    {errorDescription && (
+                        <p className="text-gray-600 mb-6 leading-relaxed">
+                            {errorDescription}
+                        </p>
+                    )}
+
+                    {isOfflineError && (
+                        <div className="bg-white rounded-xl p-4 text-left mb-6">
+                            <p className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                                <span className="text-lg">💡</span>
+                                Tips:
+                            </p>
+                            <ul className="text-sm text-gray-700 space-y-1.5">
+                                <li className="flex items-start gap-2">
+                                    <span className="text-green-600 mt-0.5">✓</span>
+                                    <span>Buka berita ini saat online agar bisa dibaca offline</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="text-green-600 mt-0.5">✓</span>
+                                    <span>Cek bookmark Anda untuk berita yang sudah tersimpan</span>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
+
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className={`flex-1 px-6 py-3 rounded-lg font-semibold text-white transition-all ${isOfflineError
+                                ? 'bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600'
+                                : 'bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600'
+                                }`}
+                        >
+                            Coba Lagi
+                        </button>
+                        <a
+                            href="#/"
+                            className="flex-1 px-6 py-3 rounded-lg font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all text-center"
+                        >
+                            Ke Beranda
+                        </a>
+                    </div>
+                </div>
             </div>
         );
     }
