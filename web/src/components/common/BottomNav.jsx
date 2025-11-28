@@ -90,7 +90,7 @@ const BottomNav = ({ currentPath }) => {
                                         }`}
                                 >
                                     <User className="w-5 h-5" />
-                                    <span>{user.profile?.full_name || user.email}</span>
+                                    <span>{user.full_name || user.email}</span>
                                     {isAdmin && (
                                         <span className="ml-1 px-2 py-0.5 text-xs font-semibold bg-primary-600 text-white rounded-full">
                                             Admin

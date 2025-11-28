@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Edit, Trash2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { adminService } from '../../services/adminService';
-import { supabase } from '../../config/supabase';
+import { kategoriService } from '../../services/kategoriService';
 import { getImageUrl } from '../../utils/helpers';
 import { ITEMS_PER_PAGE } from '../../utils/constants';
 
@@ -35,10 +35,7 @@ const BeritaList = () => {
 
     const fetchKategoris = async () => {
         try {
-            const { data } = await supabase
-                .from('kategori')
-                .select('*')
-                .order('nama');
+            const { data } = await kategoriService.getAll();
             setKategoris(data || []);
         } catch (error) {
             console.error('Fetch kategoris error:', error);

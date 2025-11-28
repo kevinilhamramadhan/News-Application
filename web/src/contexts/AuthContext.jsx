@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
                 if (token) {
                     // Token exists, verify with API
                     try {
-                        const { user: currentUser } = await authService.getCurrentUserViaAPI();
+                        const { user: currentUser } = await authService.getCurrentUser();
                         setUser(currentUser);
                         setIsAdmin(currentUser?.role === 'admin');
                     } catch (error) {
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
     const signUp = async (email, password, fullName) => {
         setLoading(true);
         try {
-            const { user: newUser, token } = await authService.registerViaAPI(email, password, fullName);
+            const { user: newUser, token } = await authService.register(email, password, fullName);
 
             // Set user and admin status
             setUser(newUser);
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
     const signIn = async (email, password) => {
         setLoading(true);
         try {
-            const { user: loggedInUser, token } = await authService.loginViaAPI(email, password);
+            const { user: loggedInUser, token } = await authService.login(email, password);
 
             // Set user and admin status
             setUser(loggedInUser);
@@ -98,7 +98,7 @@ export const AuthProvider = ({ children }) => {
     const signOut = async () => {
         setLoading(true);
         try {
-            await authService.logoutViaAPI();
+            await authService.logout();
 
             setUser(null);
             setIsAdmin(false);
@@ -123,7 +123,7 @@ export const AuthProvider = ({ children }) => {
      */
     const updateProfile = async (data) => {
         try {
-            const { user: updatedUser } = await authService.updateProfileViaAPI(data);
+            const { user: updatedUser } = await authService.updateProfile(data);
 
             // Update local user state
             setUser(prev => ({

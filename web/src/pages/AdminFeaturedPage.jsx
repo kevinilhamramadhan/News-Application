@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Star, Search, AlertCircle, CheckCircle } from 'lucide-react';
 import { adminService } from '../services/adminService';
-import { supabase } from '../config/supabase';
 import { getImageUrl, formatRelativeTime } from '../utils/helpers';
 import Toast from '../components/common/Toast';
 import ProtectedRoute from '../components/common/ProtectedRoute';

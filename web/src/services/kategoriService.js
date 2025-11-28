@@ -49,4 +49,17 @@ export const kategoriService = {
             throw error;
         }
     },
+
+    /**
+     * Create new kategori (admin only)
+     */
+    create: async (kategoriData) => {
+        try {
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.KATEGORI.LIST, kategoriData);
+            return { data: response.data };
+        } catch (error) {
+            console.error('Create kategori error:', error);
+            throw error;
+        }
+    },
 };

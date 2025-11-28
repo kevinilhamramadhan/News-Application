@@ -22,7 +22,7 @@ const KategoriCard = ({ kategori }) => {
                 {kategori.deskripsi || 'Kategori berita'}
             </p>
             <div className="text-xs text-gray-500">
-                {kategori.jumlah_berita || kategori._count?.berita || 0} berita
+                {kategori.berita_count || 0} berita
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, Image as ImageIcon, X, AlertCircle, Plus } from 'lucide-react';
 import { adminService } from '../../services/adminService';
-import { supabase } from '../../config/supabase';
+import { kategoriService } from '../../services/kategoriService';
 
 /**
  * BeritaForm Component
@@ -14,8 +14,7 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
         konten: '',
         ringkasan: '',
         gambar_url: '',
-        status: 'draft',
-        is_featured: false
+        status: 'draft'
     });
     const [kategoris, setKategoris] = useState([]);
     const [imageFile, setImageFile] = useState(null);
@@ -45,12 +44,7 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
 
     const fetchKategoris = async () => {
         try {
-            const { data, error } = await supabase
-                .from('kategori')
-                .select('*')
-                .order('nama');
-
-            if (error) throw error;
+            const { data } = await kategoriService.getAll();
             setKategoris(data || []);
         } catch (error) {
             console.error('Fetch kategoris error:', error);
@@ -63,14 +57,14 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
             const { data, error } = await adminService.getBeritaById(beritaId);
             if (error) throw error;
 
+            // Don't include is_featured in form - it's managed separately in Featured News tab
             setFormData({
                 judul: data.judul || '',
                 kategori_id: data.kategori_id || '',
                 konten: data.konten || '',
                 ringkasan: data.ringkasan || '',
                 gambar_url: data.gambar_url || '',
-                status: data.status || 'draft',
-                is_featured: data.is_featured || false
+                status: data.status || 'draft'
             });
 
             if (data.gambar_url) {
@@ -152,17 +146,11 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
                 .replace(/[^a-z0-9\s-]/g, '')
                 .replace(/\s+/g, '-');
 
-            const { data, error } = await supabase
-                .from('kategori')
-                .insert([{
-                    nama: newCategory.nama.trim(),
-                    slug: slug,
-                    deskripsi: newCategory.deskripsi.trim()
-                }])
-                .select()
-                .single();
-
-            if (error) throw error;
+            const { data } = await kategoriService.create({
+                nama: newCategory.nama.trim(),
+                slug: slug,
+                deskripsi: newCategory.deskripsi.trim()
+            });
 
             // Refresh kategoris list
             await fetchKategoris();
@@ -420,7 +408,7 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
                                 <p className="text-sm text-gray-600 mb-1">
                                     <span className="font-semibold">Klik untuk upload</span> atau drag and drop
                                 </p>
-                                <p className="text-xs text-gray-500">PNG, JPG, GIF hingga 5MB</p>
+                                <p className="text-xs text-gray-500">PNG, JPG, GIF hingga 1MB</p>
                             </div>
                             <input
                                 type="file"
@@ -434,21 +422,6 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
                     {errors.gambar && (
                         <p className="mt-1 text-sm text-red-600">{errors.gambar}</p>
                     )}
-                </div>
-
-                {/* Featured Checkbox */}
-                <div className="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <input
-                        type="checkbox"
-                        id="is_featured"
-                        checked={formData.is_featured}
-                        onChange={(e) => setFormData(prev => ({ ...prev, is_featured: e.target.checked }))}
-                        className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                    />
-                    <label htmlFor="is_featured" className="flex-1 cursor-pointer">
-                        <span className="text-sm font-semibold text-gray-900">Tandai sebagai Berita Unggulan</span>
-                        <p className="text-xs text-gray-600 mt-0.5">Berita unggulan akan ditampilkan di bagian hero homepage</p>
-                    </label>
                 </div>
 
                 {/* Action Buttons */}

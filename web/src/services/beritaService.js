@@ -11,9 +11,9 @@ export const beritaService = {
 
             return {
                 data: response.data || [],
-                count: response.count || 0,
-                page: response.page || 1,
-                limit: response.limit || 9,
+                count: response.pagination?.total || 0,
+                page: response.pagination?.page || params.page || 1,
+                limit: response.pagination?.limit || params.limit || 9,
             };
         } catch (error) {
             console.error('Get all berita error:', error);
@@ -95,9 +95,9 @@ export const beritaService = {
 
             return {
                 data: response.data || [],
-                count: response.count || 0,
-                page: response.page || 1,
-                limit: response.limit || 9,
+                count: response.pagination?.total || 0,
+                page: response.pagination?.page || params.page || 1,
+                limit: response.pagination?.limit || params.limit || 9,
             };
         } catch (error) {
             console.error('Get berita by kategori error:', error);

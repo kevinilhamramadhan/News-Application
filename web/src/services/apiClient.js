@@ -118,6 +118,22 @@ class ApiClient {
     }
 
     /**
+     * POST request with FormData (for file uploads)
+     */
+    async postFormData(url, formData) {
+        try {
+            const response = await this.client.post(url, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
      * PUT request
      */
     async put(url, data = {}) {

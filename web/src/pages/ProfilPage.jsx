@@ -11,7 +11,7 @@ const ProfilPage = () => {
     const { user, isAdmin, signOut, updateProfile } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
-        full_name: user?.profile?.full_name || ''
+        full_name: user?.full_name || ''
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -45,16 +45,13 @@ const ProfilPage = () => {
     };
 
     const handleCancel = () => {
-        setFormData({ full_name: user?.profile?.full_name || '' });
+        setFormData({ full_name: user?.full_name || '' });
         setIsEditing(false);
         setMessage({ type: '', text: '' });
     };
 
     const handleLogout = async () => {
-        if (confirm('Apakah Anda yakin ingin keluar?')) {
-            await signOut();
-            window.location.hash = '#/';
-        }
+        await signOut();
     };
 
     return (
@@ -72,7 +69,7 @@ const ProfilPage = () => {
                             </div>
                             <div>
                                 <h2 className="text-2xl font-bold mb-1">
-                                    {user?.profile?.full_name || 'User'}
+                                    {user?.full_name || 'User'}
                                 </h2>
                                 <p className="text-primary-100">{user?.email}</p>
                                 {isAdmin && (
@@ -130,7 +127,7 @@ const ProfilPage = () => {
                             ) : (
                                 <input
                                     type="text"
-                                    value={user?.profile?.full_name || '-'}
+                                    value={user?.full_name || '-'}
                                     disabled
                                     className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900"
                                 />
