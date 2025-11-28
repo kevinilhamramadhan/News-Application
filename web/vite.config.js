@@ -81,31 +81,13 @@ export default defineConfig({
             }
           },
 
-
-          // Network-first for Berita API (localhost development)
+          // Network-first for Vercel API (Production)
           {
-            urlPattern: /^http:\/\/localhost:5000\/(berita|kategori).*/i,
+            urlPattern: /^https:\/\/news-api-sepia-delta\.vercel\.app\/api\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'berita-api-cache',
-              networkTimeoutSeconds: 5,
-              expiration: {
-                maxEntries: 200,
-                maxAgeSeconds: 24 * 60 * 60 // 24 hours - keep articles longer
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-
-          // Network-first for Berita API (production - adjust domain as needed)
-          {
-            urlPattern: /^https?:\/\/.*\/(berita|kategori|api).*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 5,
+              cacheName: 'vercel-api-cache',
+              networkTimeoutSeconds: 10,
               expiration: {
                 maxEntries: 200,
                 maxAgeSeconds: 24 * 60 * 60 // 24 hours
@@ -116,13 +98,30 @@ export default defineConfig({
             }
           },
 
-          // Network-first for Supabase requests
+          // Network-first for any API endpoints (fallback)
+          {
+            urlPattern: /^https?:\/\/.*\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              networkTimeoutSeconds: 10,
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 24 * 60 * 60 // 24 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+
+          // Network-first for Supabase requests (keep for auth and admin operations)
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'supabase-cache',
-              networkTimeoutSeconds: 5,
+              networkTimeoutSeconds: 10,
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 5 * 60 // 5 minutes
@@ -147,7 +146,8 @@ export default defineConfig({
           }
         ],
 
-        navigateFallback: '/offline.html',
+        // Removed navigateFallback to prevent false "Offline" messages
+        // navigateFallback: '/offline.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/auth\//],
         cleanupOutdatedCaches: true,
         skipWaiting: true,
@@ -155,7 +155,7 @@ export default defineConfig({
       },
 
       devOptions: {
-        enabled: true,
+        enabled: false, // Disable SW in dev to prevent caching issues
         type: 'module',
         navigateFallback: 'index.html'
       }

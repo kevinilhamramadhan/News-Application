@@ -25,7 +25,7 @@ export const useKategori = () => {
                 }
 
                 const response = await kategoriService.getAll();
-                setKategori(response.data.data || response.data);
+                setKategori(response.data || []);
             } catch (err) {
                 // Check if error is due to network issue
                 const isNetworkError = err.message?.includes('Network') ||
@@ -82,7 +82,7 @@ export const useKategoriDetail = (slug) => {
                 }
 
                 const response = await kategoriService.getBySlug(slug);
-                setKategori(response.data.data || response.data);
+                setKategori(response.data || null);
             } catch (err) {
                 // Check if error is due to network issue
                 const isNetworkError = err.message?.includes('Network') ||

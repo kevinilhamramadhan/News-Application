@@ -1,18 +1,120 @@
+import apiClient from './apiClient';
+import { API_CONFIG } from '../config/api';
 import { supabase } from '../config/supabase';
 
 /**
  * Authentication Service
- * Handles all authentication operations with Supabase
+ * 
+ * IMPORTANT: This service provides DUAL authentication modes:
+ * 1. API-based JWT authentication (for future use)
+ * 2. Supabase authentication (current/legacy - still in use)
+ * 
+ * The app currently uses Supabase auth, but this service provides
+ * API auth methods for gradual migration.
  */
 export const authService = {
+    // ==================== API-BASED AUTH (JWT) ====================
+
     /**
-     * Register a new user
-     * @param {string} email - User email
-     * @param {string} password - User password
-     * @param {string} fullName - User full name
-     * @returns {Promise} Supabase auth response
+     * Register via API (returns JWT token)
      */
-    signUp: async (email, password, fullName) => {
+    async registerViaAPI(email, password, fullName) {
+        try {
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.REGISTER, {
+                email,
+                password,
+                full_name: fullName,
+            });
+
+            // Extract data from API response
+            const { user, token } = response.data;
+
+            // Store JWT token
+            if (token) {
+                apiClient.setToken(token);
+            }
+
+            return { user, token };
+        } catch (error) {
+            console.error('API Register error:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Login via API (returns JWT token)
+     */
+    async loginViaAPI(email, password) {
+        try {
+            const response = await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN, {
+                email,
+                password,
+            });
+
+            // Extract data from API response
+            const { user, token } = response.data;
+
+            // Store JWT token
+            if (token) {
+                apiClient.setToken(token);
+            }
+
+            return { user, token };
+        } catch (error) {
+            console.error('API Login error:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Logout via API (clears JWT token)
+     */
+    async logoutViaAPI() {
+        try {
+            await apiClient.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
+            apiClient.clearToken();
+
+            return { success: true };
+        } catch (error) {
+            // Even if API call fails, clear local token
+            apiClient.clearToken();
+            console.error('API Logout error:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get current user via API
+     */
+    async getCurrentUserViaAPI() {
+        try {
+            const response = await apiClient.get(API_CONFIG.ENDPOINTS.AUTH.ME);
+            return { user: response.data };
+        } catch (error) {
+            console.error('Get current user error:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Update user profile via API
+     */
+    async updateProfileViaAPI(updates) {
+        try {
+            const response = await apiClient.put(API_CONFIG.ENDPOINTS.AUTH.PROFILE, updates);
+            return { user: response.data };
+        } catch (error) {
+            console.error('Update profile error:', error);
+            throw error;
+        }
+    },
+
+    // ==================== SUPABASE AUTH (LEGACY/CURRENT) ====================
+
+    /**
+     * Register via Supabase (current method)
+     */
+    async register(email, password, fullName) {
         try {
             const { data, error } = await supabase.auth.signUp({
                 email,
@@ -20,210 +122,101 @@ export const authService = {
                 options: {
                     data: {
                         full_name: fullName,
-                        role: 'user' // Default role
-                    }
-                }
+                    },
+                },
             });
 
             if (error) throw error;
-            return { data, error: null };
+            return { user: data.user, session: data.session };
         } catch (error) {
-            console.error('Sign up error:', error);
-            return { data: null, error };
+            console.error('Supabase Register error:', error);
+            throw error;
         }
     },
 
     /**
-     * Sign in existing user
-     * @param {string} email - User email
-     * @param {string} password - User password
-     * @returns {Promise} Supabase auth response
+     * Login via Supabase (current method)
      */
-    signIn: async (email, password) => {
+    async login(email, password) {
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
-                password
+                password,
             });
 
             if (error) throw error;
-            return { data, error: null };
+            return { user: data.user, session: data.session };
         } catch (error) {
-            console.error('Sign in error:', error);
-            return { data: null, error };
+            console.error('Supabase Login error:', error);
+            throw error;
         }
     },
 
     /**
-     * Sign out current user
-     * @returns {Promise} Supabase auth response
+     * Logout via Supabase (current method)
      */
-    signOut: async () => {
+    async logout() {
         try {
             const { error } = await supabase.auth.signOut();
             if (error) throw error;
-            return { error: null };
+            return { success: true };
         } catch (error) {
-            console.error('Sign out error:', error);
-            return { error };
+            console.error('Supabase Logout error:', error);
+            throw error;
         }
     },
 
     /**
-     * Get current authenticated user with profile
-     * @returns {Promise} User object with profile data
+     * Get current user via Supabase (current method)
      */
-    getCurrentUser: async () => {
+    async getCurrentUser() {
         try {
-            // First check if there's an active session with timeout
-            const sessionPromise = supabase.auth.getSession();
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Session timeout')), 5000)
-            );
-
-            let sessionData;
-            try {
-                sessionData = await Promise.race([sessionPromise, timeoutPromise]);
-            } catch (timeoutError) {
-                // If getSession times out, try getUser directly
-                const { data: { user }, error } = await supabase.auth.getUser();
-                if (error || !user) {
-                    return { user: null, error: null };
-                }
-
-                // If we have user from getUser, continue with profile fetch
-                const { data: profile, error: profileError } = await supabase
-                    .from('users')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-
-                if (profileError) {
-                    return {
-                        user: {
-                            ...user,
-                            profile: null,
-                            role: 'user'
-                        },
-                        error: null
-                    };
-                }
-
-                return {
-                    user: {
-                        ...user,
-                        profile,
-                        role: profile?.role || 'user'
-                    },
-                    error: null
-                };
-            }
-
-            const { session } = sessionData.data;
-
-            // If no session, return null user without throwing error
-            if (!session) {
-                return { user: null, error: null };
-            }
-
-            // Get auth user
-            const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-            if (authError) throw authError;
-            if (!user) return { user: null, error: null };
-
-            // Get user profile from users table
-            const { data: profile, error: profileError } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', user.id)
-                .single();
-
-            if (profileError) {
-                console.error('Profile fetch error:', profileError);
-                // Return user without profile if profile doesn't exist yet
-                return {
-                    user: {
-                        ...user,
-                        profile: null,
-                        role: 'user'
-                    },
-                    error: null
-                };
-            }
-
-            return {
-                user: {
-                    ...user,
-                    profile,
-                    role: profile?.role || 'user'
-                },
-                error: null
-            };
-        } catch (error) {
-            // Only log errors that aren't related to missing session
-            if (error.name !== 'AuthSessionMissingError') {
-                console.error('Get current user error:', error);
-            }
-            return { user: null, error: null };
-        }
-    },
-
-    /**
-     * Update user profile
-     * @param {Object} data - Profile data to update
-     * @returns {Promise} Updated profile
-     */
-    updateProfile: async (data) => {
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('No authenticated user');
-
-            const { data: profile, error } = await supabase
-                .from('users')
-                .update({
-                    full_name: data.full_name,
-                    avatar_url: data.avatar_url,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', user.id)
-                .select()
-                .single();
-
+            const { data: { user }, error } = await supabase.auth.getUser();
             if (error) throw error;
-            return { data: profile, error: null };
+            return { user };
         } catch (error) {
-            console.error('Update profile error:', error);
-            return { data: null, error };
+            console.error('Get current user error:', error);
+            throw error;
         }
     },
 
     /**
-     * Check if current user is admin
-     * @returns {Promise<boolean>} True if user is admin
+     * Get current session via Supabase
      */
-    checkRole: async () => {
-        try {
-            const { user } = await authService.getCurrentUser();
-            return user?.role === 'admin';
-        } catch (error) {
-            console.error('Check role error:', error);
-            return false;
-        }
-    },
-
-    /**
-     * Get current session
-     * @returns {Promise} Current session
-     */
-    getSession: async () => {
+    async getSession() {
         try {
             const { data: { session }, error } = await supabase.auth.getSession();
             if (error) throw error;
-            return { session, error: null };
+            return { session };
         } catch (error) {
             console.error('Get session error:', error);
-            return { session: null, error };
+            throw error;
         }
-    }
+    },
+
+    /**
+     * Update user profile via Supabase
+     */
+    async updateProfile(updates) {
+        try {
+            const { data, error } = await supabase.auth.updateUser({
+                data: updates,
+            });
+
+            if (error) throw error;
+            return { user: data.user };
+        } catch (error) {
+            console.error('Update profile error:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Listen to auth state changes (Supabase only)
+     */
+    onAuthStateChange(callback) {
+        return supabase.auth.onAuthStateChange(callback);
+    },
 };
+
+export default authService;

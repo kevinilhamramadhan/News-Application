@@ -1,30 +1,58 @@
+// Supabase Configuration
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+let supabase;
+let onAuthStateChange;
+
+// If no credentials, create a dummy client (app now uses API instead)
 if (!supabaseUrl || !supabaseAnonKey) {
-    const errorMessage = 'Missing Supabase environment variables. Please check your .env file contains VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY';
-    console.error(errorMessage);
-    throw new Error(errorMessage);
+    console.warn('⚠️ Supabase credentials not found - using API-only mode');
+
+    // Dummy client to prevent crashes (not used in API-only mode)
+    supabase = {
+        auth: {
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => { } } } }),
+            getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+            signOut: () => Promise.resolve({ error: null }),
+            getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+            refreshSession: () => Promise.resolve({ data: { session: null }, error: null }),
+        },
+        from: () => ({
+            select: () => ({
+                eq: () => ({
+                    single: () => Promise.resolve({ data: null, error: null })
+                })
+            })
+        }),
+    };
+
+    onAuthStateChange = supabase.auth.onAuthStateChange;
+} else {
+    // Normal Supabase client (legacy, only for admin features)
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            autoRefreshToken: true,
+            persistSession: true,
+            detectSessionInUrl: true
+        }
+    });
+
+    onAuthStateChange = (callback) => {
+        return supabase.auth.onAuthStateChange(callback);
+    };
 }
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true
-    }
-});
-
-// Auth state observer helper
-export const onAuthStateChange = (callback) => {
-    return supabase.auth.onAuthStateChange(callback);
-};
+export { supabase, onAuthStateChange };
 
 // Helper to manually refresh session
 export const refreshSession = async () => {
+    if (!supabaseUrl || !supabaseAnonKey) {
+        return { success: false, error: 'Supabase not configured' };
+    }
+
     try {
         const { data, error } = await supabase.auth.refreshSession();
         if (error) {
@@ -41,6 +69,10 @@ export const refreshSession = async () => {
 
 // Helper to get current session status
 export const getSessionStatus = async () => {
+    if (!supabaseUrl || !supabaseAnonKey) {
+        return { exists: false, expiresAt: null };
+    }
+
     try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;

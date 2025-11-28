@@ -1,40 +1,15 @@
-import { supabase } from '../config/supabase';
+import apiClient from './apiClient';
+import { API_CONFIG } from '../config/api';
 
 export const kategoriService = {
     /**
-     * Get all kategori
+     * Get all kategori with berita count
      */
     getAll: async () => {
         try {
-            // Get all categories
-            const { data: categories, error: categoriesError } = await supabase
-                .from('kategori')
-                .select('*')
-                .order('nama', { ascending: true });
+            const response = await apiClient.get(API_CONFIG.ENDPOINTS.KATEGORI.LIST);
 
-            if (categoriesError) throw categoriesError;
-
-            // For each category, count the published berita
-            const categoriesWithCount = await Promise.all(
-                (categories || []).map(async (kategori) => {
-                    const { count, error: countError } = await supabase
-                        .from('berita')
-                        .select('*', { count: 'exact', head: true })
-                        .eq('kategori_id', kategori.id)
-                        .eq('status', 'published');
-
-                    if (countError) {
-                        console.error('Count error for kategori:', kategori.id, countError);
-                    }
-
-                    return {
-                        ...kategori,
-                        jumlah_berita: count || 0
-                    };
-                })
-            );
-
-            return { data: categoriesWithCount };
+            return { data: response.data || [] };
         } catch (error) {
             console.error('Get all kategori error:', error);
             throw error;
@@ -46,15 +21,9 @@ export const kategoriService = {
      */
     getById: async (id) => {
         try {
-            const { data, error } = await supabase
-                .from('kategori')
-                .select('*')
-                .eq('id', id)
-                .single();
+            const response = await apiClient.get(API_CONFIG.ENDPOINTS.KATEGORI.DETAIL(id));
 
-            if (error) throw error;
-
-            return { data };
+            return { data: response.data };
         } catch (error) {
             console.error('Get kategori by ID error:', error);
             throw error;
@@ -63,18 +32,18 @@ export const kategoriService = {
 
     /**
      * Get kategori by slug
+     * Note: API doesn't have slug endpoint yet, so we get all and filter
      */
     getBySlug: async (slug) => {
         try {
-            const { data, error } = await supabase
-                .from('kategori')
-                .select('*')
-                .eq('slug', slug)
-                .single();
+            const response = await apiClient.get(API_CONFIG.ENDPOINTS.KATEGORI.LIST);
+            const kategori = (response.data || []).find(k => k.slug === slug);
 
-            if (error) throw error;
+            if (!kategori) {
+                throw new Error('Kategori not found');
+            }
 
-            return { data };
+            return { data: kategori };
         } catch (error) {
             console.error('Get kategori by slug error:', error);
             throw error;
