@@ -81,16 +81,34 @@ export default defineConfig({
             }
           },
 
-          // Network-first for API calls
+
+          // Network-first for Berita API (localhost development)
           {
-            urlPattern: /^https?:\/\/.*\/api\/.*/i,
+            urlPattern: /^http:\/\/localhost:5000\/(berita|kategori).*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'berita-api-cache',
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 24 * 60 * 60 // 24 hours - keep articles longer
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+
+          // Network-first for Berita API (production - adjust domain as needed)
+          {
+            urlPattern: /^https?:\/\/.*\/(berita|kategori|api).*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
               networkTimeoutSeconds: 5,
               expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 5 * 60 // 5 minutes
+                maxEntries: 200,
+                maxAgeSeconds: 24 * 60 * 60 // 24 hours
               },
               cacheableResponse: {
                 statuses: [0, 200]

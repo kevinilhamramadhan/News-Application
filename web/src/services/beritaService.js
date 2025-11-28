@@ -68,12 +68,21 @@ export const beritaService = {
 
             if (error) throw error;
 
-            // Increment views
+            // Increment views using database function (more secure)
             if (data) {
-                await supabase
-                    .from('berita')
-                    .update({ views: (data.views || 0) + 1 })
-                    .eq('id', id);
+                try {
+                    const { error: rpcError } = await supabase
+                        .rpc('increment_berita_views', { berita_id: id });
+
+                    if (rpcError) {
+                        console.error('❌ Views increment error:', rpcError.message);
+                    } else {
+                        console.log(`✅ Views incremented for berita ID ${id}`);
+                    }
+                } catch (viewsError) {
+                    // Silently ignore views increment errors (e.g., when offline)
+                    console.log('⚠️ Views increment skipped:', viewsError.message);
+                }
             }
 
             return { data };
@@ -97,12 +106,21 @@ export const beritaService = {
 
             if (error) throw error;
 
-            // Increment views
+            // Increment views using database function (more secure)
             if (data) {
-                await supabase
-                    .from('berita')
-                    .update({ views: (data.views || 0) + 1 })
-                    .eq('id', data.id);
+                try {
+                    const { error: rpcError } = await supabase
+                        .rpc('increment_berita_views', { berita_id: data.id });
+
+                    if (rpcError) {
+                        console.error('❌ Views increment error:', rpcError.message);
+                    } else {
+                        console.log(`✅ Views incremented for berita "${data.judul}"`);
+                    }
+                } catch (viewsError) {
+                    // Silently ignore views increment errors (e.g., when offline)
+                    console.log('⚠️ Views increment skipped:', viewsError.message);
+                }
             }
 
             return { data };

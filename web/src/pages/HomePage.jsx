@@ -133,7 +133,7 @@ const HomePage = () => {
                         {/* Carousel Image */}
                         <div
                             className="cursor-pointer w-full h-full"
-                            onClick={() => (window.location.hash = `/ berita / ${currentHeroBerita.id} `)}
+                            onClick={() => (window.location.hash = `/berita/${currentHeroBerita.id}`)}
                         >
                             <img
                                 key={currentHeroBerita.id}
@@ -156,7 +156,7 @@ const HomePage = () => {
                             </span>
                             <h1
                                 className="text-3xl md:text-4xl font-bold mb-3 group-hover:text-primary-300 transition-colors cursor-pointer"
-                                onClick={() => (window.location.hash = `/ berita / ${currentHeroBerita.id} `)}
+                                onClick={() => (window.location.hash = `/berita/${currentHeroBerita.id}`)}
                             >
                                 {currentHeroBerita.judul}
                             </h1>
@@ -205,11 +205,11 @@ const HomePage = () => {
                                                 e.stopPropagation();
                                                 handleDotClick(index);
                                             }}
-                                            className={`w - 2 h - 2 rounded - full transition - all ${index === currentSlide
+                                            className={`w-2 h-2 rounded-full transition-all ${index === currentSlide
                                                 ? 'bg-white w-8'
                                                 : 'bg-white/50 hover:bg-white/75'
                                                 } `}
-                                            aria-label={`Go to slide ${index + 1} `}
+                                            aria-label={`Go to slide ${index + 1}`}
                                         />
                                     ))}
                                 </div>

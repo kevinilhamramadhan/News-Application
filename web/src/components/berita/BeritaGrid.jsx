@@ -36,34 +36,14 @@ const BeritaGrid = ({ berita, loading, error, onBookmarkToggle, bookmarkedIds = 
 
                     {/* Message */}
                     <h3 className="text-xl font-bold text-gray-900 mb-3">
-                        {errorMessage}
+                        {isOfflineError ? 'Maaf, Anda Sedang Offline' : errorMessage}
                     </h3>
 
-                    {errorDescription && (
-                        <p className="text-gray-600 mb-6 leading-relaxed">
-                            {errorDescription}
-                        </p>
-                    )}
-
-                    {/* Tips for offline error */}
-                    {isOfflineError && (
-                        <div className="bg-white rounded-xl p-4 text-left">
-                            <p className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                                <span className="text-lg">💡</span>
-                                Tips:
-                            </p>
-                            <ul className="text-sm text-gray-700 space-y-1.5">
-                                <li className="flex items-start gap-2">
-                                    <span className="text-green-600 mt-0.5">✓</span>
-                                    <span>Berita yang pernah dibuka bisa dibaca offline</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <span className="text-green-600 mt-0.5">✓</span>
-                                    <span>Sambungkan internet untuk melihat berita terbaru</span>
-                                </li>
-                            </ul>
-                        </div>
-                    )}
+                    <p className="text-gray-600 mb-6 leading-relaxed">
+                        {isOfflineError
+                            ? 'Konten tidak dapat diakses saat offline. Silakan sambungkan ke internet untuk melihat berita.'
+                            : (errorDescription || 'Terjadi kesalahan saat memuat data.')}
+                    </p>
 
                     {/* Retry button */}
                     <button
