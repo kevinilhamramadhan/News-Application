@@ -25,7 +25,6 @@ const BeritaDetailPage = ({ id }) => {
                 type: 'success',
             });
         } catch (error) {
-            console.error('Bookmark toggle error:', error);
             if (error.message === 'AUTH_REQUIRED') {
                 setToast({
                     message: 'Silakan login terlebih dahulu untuk menyimpan bookmark.',
@@ -85,8 +84,8 @@ const BeritaDetailPage = ({ id }) => {
                 <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 max-w-md w-full text-center shadow-lg">
                     <div className="mb-6">
                         <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${isOfflineError
-                                ? 'bg-gradient-to-br from-blue-100 to-cyan-100'
-                                : 'bg-gradient-to-br from-red-100 to-orange-100'
+                            ? 'bg-gradient-to-br from-blue-100 to-cyan-100'
+                            : 'bg-gradient-to-br from-red-100 to-orange-100'
                             }`}>
                             {isOfflineError ? (
                                 <WifiOff className="w-10 h-10 text-blue-600" strokeWidth={2} />
@@ -110,8 +109,8 @@ const BeritaDetailPage = ({ id }) => {
                         <button
                             onClick={() => window.location.reload()}
                             className={`flex-1 px-6 py-3 rounded-lg font-semibold text-white transition-all ${isOfflineError
-                                    ? 'bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600'
-                                    : 'bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600'
+                                ? 'bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600'
+                                : 'bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600'
                                 }`}
                         >
                             Coba Lagi

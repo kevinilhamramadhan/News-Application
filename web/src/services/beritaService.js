@@ -16,7 +16,6 @@ export const beritaService = {
                 limit: response.pagination?.limit || params.limit || 9,
             };
         } catch (error) {
-            console.error('Get all berita error:', error);
             throw error;
         }
     },
@@ -28,18 +27,18 @@ export const beritaService = {
         try {
             const response = await apiClient.get(API_CONFIG.ENDPOINTS.BERITA.DETAIL(id));
 
-            // Increment views using API endpoint
-            try {
-                await apiClient.post(API_CONFIG.ENDPOINTS.BERITA.INCREMENT_VIEW(id));
-                console.log(`✅ Views incremented for berita ID ${id}`);
-            } catch (viewsError) {
-                // Silently ignore views increment errors (e.g., when offline)
-                console.log('⚠️ Views increment skipped:', viewsError.message);
+            // Only increment views if user is logged in
+            const token = apiClient.getToken();
+            if (token && navigator.onLine) {
+                try {
+                    await apiClient.post(API_CONFIG.ENDPOINTS.BERITA.INCREMENT_VIEW(id));
+                } catch (viewsError) {
+                    // Silently ignore views increment errors
+                }
             }
 
             return { data: response.data };
         } catch (error) {
-            console.error('Get berita by ID error:', error);
             throw error;
         }
     },
@@ -51,20 +50,18 @@ export const beritaService = {
         try {
             const response = await apiClient.get(API_CONFIG.ENDPOINTS.BERITA.BY_SLUG(slug));
 
-            // Increment views using API endpoint
-            if (response.data) {
+            // Only increment views if user is logged in
+            const token = apiClient.getToken();
+            if (response.data && token && navigator.onLine) {
                 try {
                     await apiClient.post(API_CONFIG.ENDPOINTS.BERITA.INCREMENT_VIEW(response.data.id));
-                    console.log(`✅ Views incremented for berita "${response.data.judul}"`);
                 } catch (viewsError) {
-                    // Silently ignore views increment errors (e.g., when offline)
-                    console.log('⚠️ Views increment skipped:', viewsError.message);
+                    // Silently ignore views increment errors
                 }
             }
 
             return { data: response.data };
         } catch (error) {
-            console.error('Get berita by slug error:', error);
             throw error;
         }
     },
@@ -78,7 +75,6 @@ export const beritaService = {
 
             return { data: response.data || [] };
         } catch (error) {
-            console.error('Get popular berita error:', error);
             throw error;
         }
     },
@@ -100,7 +96,6 @@ export const beritaService = {
                 limit: response.pagination?.limit || params.limit || 9,
             };
         } catch (error) {
-            console.error('Get berita by kategori error:', error);
             throw error;
         }
     },
@@ -115,7 +110,6 @@ export const beritaService = {
 
             return { data: response.data || [] };
         } catch (error) {
-            console.error('Get featured berita error:', error);
             return { data: [] };
         }
     },
