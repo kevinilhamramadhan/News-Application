@@ -73,7 +73,7 @@ const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false, requireAut
                 {/* Category Badge */}
                 <div className="mb-2">
                     <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 text-xs font-semibold rounded-full">
-                        {berita.kategori?.nama || 'Umum'}
+                        {berita.kategori_berita?.nama || berita.kategori?.nama || 'Umum'}
                     </span>
                 </div>
 

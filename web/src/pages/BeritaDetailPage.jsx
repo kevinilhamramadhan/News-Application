@@ -151,7 +151,7 @@ const BeritaDetailPage = ({ id }) => {
 
                 {/* Category */}
                 <span className="inline-block px-3 py-1 bg-primary-100 text-primary-700 text-sm font-semibold rounded-full mb-4">
-                    {berita.kategori?.nama || 'Umum'}
+                    {berita.kategori_berita?.nama || berita.kategori?.nama || 'Umum'}
                 </span>
 
                 {/* Title */}
