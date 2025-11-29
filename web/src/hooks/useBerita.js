@@ -13,18 +13,6 @@ export const useBerita = (params = {}) => {
                 setLoading(true);
                 setError(null);
 
-                // Check if offline before fetching
-                if (!navigator.onLine) {
-                    setError({
-                        message: 'Anda sedang offline',
-                        isOffline: true,
-                        description: 'Data berita tidak tersedia saat offline. Silakan coba lagi ketika koneksi internet tersambung.'
-                    });
-                    setBerita([]);
-                    setLoading(false);
-                    return;
-                }
-
                 const response = await beritaService.getAll(params);
                 // beritaService.getAll returns { data, count, page, limit }
                 setBerita(response.data || []);
@@ -78,18 +66,6 @@ export const useBeritaDetail = (id) => {
                 setLoading(true);
                 setError(null);
 
-                // Check if offline before fetching
-                if (!navigator.onLine) {
-                    setError({
-                        message: 'Anda sedang offline',
-                        isOffline: true,
-                        description: 'Berita ini belum tersimpan di cache. Untuk membaca berita ini, silakan sambungkan ke internet terlebih dahulu.'
-                    });
-                    setBerita(null);
-                    setLoading(false);
-                    return;
-                }
-
                 const response = await beritaService.getById(id);
                 // beritaService.getById returns { data }
                 setBerita(response.data || null);
@@ -133,18 +109,6 @@ export const useBeritaPopular = (limit = 6) => {
             try {
                 setLoading(true);
                 setError(null);
-
-                // Check if offline before fetching
-                if (!navigator.onLine) {
-                    setError({
-                        message: 'Anda sedang offline',
-                        isOffline: true,
-                        description: 'Data berita populer tidak tersedia saat offline.'
-                    });
-                    setBerita([]);
-                    setLoading(false);
-                    return;
-                }
 
                 const response = await beritaService.getPopular(limit);
                 // beritaService.getPopular returns { data }

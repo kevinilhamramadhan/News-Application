@@ -5,6 +5,8 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import BottomNav from './components/common/BottomNav';
 import InstallPWA from './components/common/InstallPWA';
 import OnlineStatus from './components/common/OnlineStatus';
+import PreCacheToast from './components/common/PreCacheToast';
+import { usePreCache } from './hooks/usePreCache';
 import OfflinePage from './components/common/OfflinePage';
 import HomePage from './pages/HomePage';
 import BeritaPage from './pages/BeritaPage';
@@ -22,6 +24,18 @@ import AdminFeaturedPage from './pages/AdminFeaturedPage';
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '/');
   const [updateAvailable, setUpdateAvailable] = useState(false);
+
+  // Pre-cache hook for offline functionality
+  const {
+    isFirstVisit,
+    isPreCaching,
+    progress,
+    isComplete,
+    error,
+    startCaching,
+    retryCaching,
+    dismissModal,
+  } = usePreCache();
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -41,7 +55,6 @@ function App() {
     if ('serviceWorker' in navigator) {
       // Listen for service worker updates
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('Service worker updated');
         setUpdateAvailable(true);
       });
 
@@ -63,6 +76,17 @@ function App() {
       return () => clearInterval(updateInterval);
     }
   }, []);
+
+  // Auto-trigger pre-caching on first visit
+  useEffect(() => {
+    if (isFirstVisit && !isPreCaching) {
+      // Small delay to ensure app is fully loaded
+      const timer = setTimeout(() => {
+        startCaching();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isFirstVisit, isPreCaching, startCaching]);
 
   const handleUpdate = () => {
     window.location.reload();
@@ -163,6 +187,12 @@ function App() {
 
             {/* PWA Install Prompt */}
             <InstallPWA />
+
+            {/* Pre-Cache Toast - Only shows after completion */}
+            <PreCacheToast
+              isVisible={isComplete && !error}
+              onClose={dismissModal}
+            />
 
             {/* Update Available Banner */}
             {updateAvailable && (

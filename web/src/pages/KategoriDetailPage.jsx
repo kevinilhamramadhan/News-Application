@@ -21,18 +21,6 @@ const KategoriDetailPage = ({ slug }) => {
                 setLoadingBerita(true);
                 setErrorBerita(null);
 
-                // Check if offline before fetching
-                if (!navigator.onLine) {
-                    setErrorBerita({
-                        message: 'Anda sedang offline',
-                        isOffline: true,
-                        description: 'Data berita dalam kategori ini tidak tersedia saat offline.'
-                    });
-                    setBerita([]);
-                    setLoadingBerita(false);
-                    return;
-                }
-
                 const response = await beritaService.getByKategori(kategori.id);
                 setBerita(response.data.data || response.data);
             } catch (err) {

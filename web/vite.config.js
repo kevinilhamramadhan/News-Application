@@ -81,13 +81,12 @@ export default defineConfig({
             }
           },
 
-          // Network-first for Vercel API (Production)
+          // CacheFirst for Vercel API (Production) - Better offline support
           {
             urlPattern: /^https:\/\/news-api-sepia-delta\.vercel\.app\/api\/.*/i,
-            handler: 'NetworkFirst',
+            handler: 'CacheFirst',
             options: {
               cacheName: 'vercel-api-cache',
-              networkTimeoutSeconds: 10,
               expiration: {
                 maxEntries: 200,
                 maxAgeSeconds: 24 * 60 * 60 // 24 hours
@@ -98,13 +97,12 @@ export default defineConfig({
             }
           },
 
-          // Network-first for any API endpoints (fallback)
+          // CacheFirst for any API endpoints (fallback) - Better offline support
           {
             urlPattern: /^https?:\/\/.*\/api\/.*/i,
-            handler: 'NetworkFirst',
+            handler: 'CacheFirst',
             options: {
               cacheName: 'api-cache',
-              networkTimeoutSeconds: 10,
               expiration: {
                 maxEntries: 200,
                 maxAgeSeconds: 24 * 60 * 60 // 24 hours

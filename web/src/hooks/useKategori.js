@@ -12,18 +12,6 @@ export const useKategori = () => {
                 setLoading(true);
                 setError(null);
 
-                // Check if offline before fetching
-                if (!navigator.onLine) {
-                    setError({
-                        message: 'Anda sedang offline',
-                        isOffline: true,
-                        description: 'Data kategori tidak tersedia saat offline. Silakan coba lagi ketika koneksi internet tersambung.'
-                    });
-                    setKategori([]);
-                    setLoading(false);
-                    return;
-                }
-
                 const response = await kategoriService.getAll();
                 setKategori(response.data || []);
             } catch (err) {
@@ -68,18 +56,6 @@ export const useKategoriDetail = (slug) => {
             try {
                 setLoading(true);
                 setError(null);
-
-                // Check if offline before fetching
-                if (!navigator.onLine) {
-                    setError({
-                        message: 'Anda sedang offline',
-                        isOffline: true,
-                        description: 'Data kategori ini tidak tersedia saat offline.'
-                    });
-                    setKategori(null);
-                    setLoading(false);
-                    return;
-                }
 
                 const response = await kategoriService.getBySlug(slug);
                 setKategori(response.data || null);
