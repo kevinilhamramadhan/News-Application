@@ -232,6 +232,19 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
 
             submitData.gambar_url = imageUrl;
 
+            // Auto-generate slug from ringkasan if not editing
+            if (!beritaId) {
+                submitData.slug = submitData.ringkasan
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+                    .replace(/\s+/g, '-') // Replace spaces with hyphens
+                    .replace(/-+/g, '-') // Replace multiple hyphens with single
+                    .trim();
+
+                // Add timestamp to ensure uniqueness
+                submitData.slug = `${submitData.slug}-${Date.now()}`;
+            }
+
             // Create or update berita
             if (beritaId) {
                 const { error } = await adminService.updateBerita(beritaId, submitData);
