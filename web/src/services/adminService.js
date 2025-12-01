@@ -19,7 +19,7 @@ export const adminService = {
             formData.append('image', file);
             formData.append('bucket', bucket);
 
-            const response = await apiClient.postFormData('/upload', formData);
+            const response = await apiClient.postFormData(API_CONFIG.ENDPOINTS.UPLOAD, formData);
 
             return {
                 url: response.data.url,
