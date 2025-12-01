@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react';
 import { BookmarkX } from 'lucide-react';
 import { useBookmark } from '../hooks/useBookmark';
-import { beritaService } from '../services/beritaService';
+import { bookmarkService } from '../services/bookmarkService';
 import BeritaGrid from '../components/berita/BeritaGrid';
 
 const BookmarkPage = () => {
-    const { bookmarks, toggleBookmark } = useBookmark();
+    const { bookmarks, toggleBookmark, isAuthenticated, loading: bookmarkLoading } = useBookmark();
     const [beritaList, setBeritaList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchBookmarkedBerita = async () => {
-            if (bookmarks.length === 0) {
+            // Wait for bookmark loading to complete first
+            if (bookmarkLoading) {
+                setLoading(true);
+                return;
+            }
+
+            // If not authenticated or no bookmarks, show empty state
+            if (!isAuthenticated || bookmarks.length === 0) {
                 setBeritaList([]);
                 setLoading(false);
                 return;
@@ -22,19 +29,12 @@ const BookmarkPage = () => {
                 setLoading(true);
                 setError(null);
 
-                // Fetch each bookmarked berita
-                const promises = bookmarks.map((id) =>
-                    beritaService.getById(id).catch(() => null)
-                );
-                const results = await Promise.all(promises);
+                // Use bookmarkService to get bookmarked berita with full details
+                const { data } = await bookmarkService.getBookmarkedBerita();
 
-                // Filter out null results (failed fetches)
-                const validBerita = results
-                    .filter((res) => res !== null)
-                    .map((res) => res.data.data || res.data);
-
-                setBeritaList(validBerita);
+                setBeritaList(data || []);
             } catch (err) {
+                console.error('Failed to fetch bookmarked berita:', err);
                 setError('Gagal memuat berita bookmark');
                 setBeritaList([]);
             } finally {
@@ -43,7 +43,7 @@ const BookmarkPage = () => {
         };
 
         fetchBookmarkedBerita();
-    }, [bookmarks]);
+    }, [bookmarks, isAuthenticated, bookmarkLoading]);
 
     const handleBookmarkToggle = (beritaId) => {
         toggleBookmark(beritaId);

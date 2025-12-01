@@ -36,6 +36,8 @@ export const API_CONFIG = {
             REMOVE: (beritaId) => `/api/bookmarks/${beritaId}`,
             CHECK: (beritaId) => `/api/bookmarks/check/${beritaId}`,
         },
+        // Upload
+        UPLOAD: '/api/upload',
     },
 };
 

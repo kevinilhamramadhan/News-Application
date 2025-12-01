@@ -217,13 +217,16 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
 
             // Upload image if new file selected
             if (imageFile) {
+                console.log('Uploading image:', imageFile.name, imageFile.size);
                 const { url, error: uploadError } = await adminService.uploadImage(imageFile);
 
                 if (uploadError) {
-                    setErrorMessage('Gagal mengunggah gambar');
+                    console.error('Upload error:', uploadError);
+                    setErrorMessage(`Gagal mengunggah gambar: ${uploadError}`);
                     return;
                 }
 
+                console.log('Upload success:', url);
                 imageUrl = url;
             }
 

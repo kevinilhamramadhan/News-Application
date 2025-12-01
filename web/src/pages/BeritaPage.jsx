@@ -11,7 +11,7 @@ import { ITEMS_PER_PAGE } from '../utils/constants';
 const BeritaPage = () => {
     const [filters, setFilters] = useState({
         search: '',
-        kategori_id: '',  // Changed from 'kategori' to 'kategori_id'
+        kategori: '',
         sort: 'newest',
         page: 1,
         limit: ITEMS_PER_PAGE,

@@ -91,11 +91,6 @@ const BottomNav = ({ currentPath }) => {
                                 >
                                     <User className="w-5 h-5" />
                                     <span>{user.full_name || user.email}</span>
-                                    {isAdmin && (
-                                        <span className="ml-1 px-2 py-0.5 text-xs font-semibold bg-primary-600 text-white rounded-full">
-                                            Admin
-                                        </span>
-                                    )}
                                 </a>
                             ) : (
                                 <button
@@ -113,7 +108,7 @@ const BottomNav = ({ currentPath }) => {
 
             {/* Mobile Bottom Navigation */}
             <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-                <div className="grid grid-cols-5 h-16">
+                <div className={`grid h-16 ${publicNavItems.length === 4 ? 'grid-cols-5' : 'grid-cols-4'}`}>
                     {publicNavItems.map((item) => (
                         <a
                             key={item.path}
@@ -139,9 +134,6 @@ const BottomNav = ({ currentPath }) => {
                         >
                             <User className="w-6 h-6" />
                             <span className="text-xs font-medium">Profil</span>
-                            {isAdmin && (
-                                <span className="absolute top-1 right-2 w-2 h-2 bg-primary-600 rounded-full"></span>
-                            )}
                         </a>
                     ) : (
                         <button
