@@ -232,9 +232,9 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
 
             submitData.gambar_url = imageUrl;
 
-            // Auto-generate slug from ringkasan if not editing
+            // Auto-generate slug from judul if not editing
             if (!beritaId) {
-                submitData.slug = submitData.ringkasan
+                submitData.slug = submitData.judul
                     .toLowerCase()
                     .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
                     .replace(/\s+/g, '-') // Replace spaces with hyphens
