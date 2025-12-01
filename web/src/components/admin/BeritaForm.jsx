@@ -12,7 +12,6 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
         judul: '',
         kategori_id: '',
         konten: '',
-        ringkasan: '',
         gambar_url: '',
         status: 'draft'
     });
@@ -62,7 +61,6 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
                 judul: data.judul || '',
                 kategori_id: data.kategori_id || '',
                 konten: data.konten || '',
-                ringkasan: data.ringkasan || '',
                 gambar_url: data.gambar_url || '',
                 status: data.status || 'draft'
             });
@@ -189,10 +187,6 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
             newErrors.konten = 'Konten minimal 50 karakter';
         }
 
-        if (!formData.ringkasan.trim()) {
-            newErrors.ringkasan = 'Ringkasan harus diisi';
-        }
-
         if (!beritaId && !imageFile && !formData.gambar) {
             newErrors.gambar = 'Gambar harus diunggah';
         }
@@ -244,6 +238,9 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
                 // Add timestamp to ensure uniqueness
                 submitData.slug = `${submitData.slug}-${Date.now()}`;
             }
+
+            // Auto-generate ringkasan from konten (first 150 chars)
+            submitData.ringkasan = submitData.konten.substring(0, 150).trim() + '...'
 
             // Create or update berita
             if (beritaId) {
@@ -346,28 +343,6 @@ const BeritaForm = ({ beritaId = null, onSuccess, onCancel }) => {
                     </div>
                     {errors.kategori_id && (
                         <p className="mt-1 text-sm text-red-600">{errors.kategori_id}</p>
-                    )}
-                </div>
-
-                {/* Ringkasan */}
-                <div>
-                    <label htmlFor="ringkasan" className="block text-sm font-medium text-gray-700 mb-2">
-                        Ringkasan <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                        id="ringkasan"
-                        name="ringkasan"
-                        value={formData.ringkasan}
-                        onChange={handleChange}
-                        rows={3}
-                        className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${errors.ringkasan
-                            ? 'border-red-300 focus:ring-red-500'
-                            : 'border-gray-300 focus:ring-primary-500'
-                            }`}
-                        placeholder="Ringkasan singkat berita"
-                    />
-                    {errors.ringkasan && (
-                        <p className="mt-1 text-sm text-red-600">{errors.ringkasan}</p>
                     )}
                 </div>
 
