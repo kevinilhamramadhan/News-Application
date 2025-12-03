@@ -108,7 +108,7 @@ const BottomNav = ({ currentPath }) => {
 
             {/* Mobile Bottom Navigation */}
             <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-                <div className={`grid h-16 ${publicNavItems.length === 4 ? 'grid-cols-5' : 'grid-cols-4'}`}>
+                <div className={`grid h-16 ${isAdmin ? 'grid-cols-5' : user ? 'grid-cols-5' : 'grid-cols-5'}`}>
                     {publicNavItems.map((item) => (
                         <a
                             key={item.path}
@@ -122,6 +122,20 @@ const BottomNav = ({ currentPath }) => {
                             <span className="text-xs font-medium">{item.label}</span>
                         </a>
                     ))}
+
+                    {/* Admin Dashboard (if admin) */}
+                    {isAdmin && (
+                        <a
+                            href="#/admin/dashboard"
+                            className={`flex flex-col items-center justify-center gap-1 transition-colors ${currentPath.startsWith('/admin')
+                                ? 'text-primary-600'
+                                : 'text-gray-600'
+                                }`}
+                        >
+                            <LayoutDashboard className="w-6 h-6" />
+                            <span className="text-xs font-medium">Admin</span>
+                        </a>
+                    )}
 
                     {/* Profile or Login */}
                     {user ? (

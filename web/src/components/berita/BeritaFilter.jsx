@@ -48,7 +48,7 @@ const BeritaFilter = ({ onFilterChange, kategoriList = [] }) => {
             </div>
 
             {/* Filter Options */}
-            <div className={`${showFilters ? 'block' : 'hidden'} md:flex gap-4 mt-4`}>
+            <div className={`${showFilters ? 'flex flex-col' : 'hidden'} md:flex md:flex-row gap-3 mt-4`}>
                 {/* Category Filter */}
                 <select
                     value={selectedKategori}

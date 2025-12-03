@@ -71,7 +71,7 @@ const ProfilPage = () => {
                                 <h2 className="text-2xl font-bold mb-1">
                                     {user?.full_name || 'User'}
                                 </h2>
-                                <p className="text-primary-100">{user?.email}</p>
+                                <p className="text-primary-100 truncate">{user?.email}</p>
                                 {isAdmin && (
                                     <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full">
                                         <Shield className="w-4 h-4" />
