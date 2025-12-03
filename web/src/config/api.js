@@ -3,7 +3,7 @@
  * API Configuration
  */
 export const API_CONFIG = {
-    BASE_URL: import.meta.env.VITE_API_URL || 'https://news-api-sepia-delta.vercel.app',
+    BASE_URL: 'https://news-api-sepia-delta.vercel.app',
     TIMEOUT: 10000,
     ENDPOINTS: {
         // Auth
