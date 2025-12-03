@@ -1,15 +1,22 @@
 {
-  "name": "BeritaKu - Portal Berita Terkini",
+  "name": "BeritaKu",
   "short_name": "BeritaKu",
   "description": "Portal berita terkini dan terpercaya. Baca berita terbaru, unggulan, dan populer dari berbagai kategori. Tersedia offline untuk pengalaman membaca tanpa gangguan.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait-primary",
   "theme_color": "#1e40af",
   "background_color": "#ffffff",
-  "categories": ["news", "magazines", "productivity"],
+  "categories": [
+    "news",
+    "magazines",
+    "productivity"
+  ],
   "lang": "id",
   "dir": "ltr",
   "icons": [

@@ -45,7 +45,7 @@ const BottomNav = ({ currentPath }) => {
                         {/* Logo */}
                         <a href="#/" className="flex items-center gap-2">
                             <Newspaper className="w-8 h-8 text-primary-600" />
-                            <span className="text-xl font-bold text-gray-900">Portal Berita</span>
+                            <span className="text-xl font-bold text-gray-900">BeritaKu</span>
                         </a>
 
                         {/* Desktop Menu */}

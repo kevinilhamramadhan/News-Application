@@ -11,7 +11,7 @@ export default defineConfig({
       includeAssets: ['icons/*.png', 'offline.html'],
 
       manifest: {
-        name: 'BeritaKu - Portal Berita Terkini',
+        name: 'BeritaKu',
         short_name: 'BeritaKu',
         description: 'Portal berita terkini dan terpercaya',
         theme_color: '#1e40af',
