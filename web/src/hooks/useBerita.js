@@ -66,9 +66,19 @@ export const useBeritaDetail = (id) => {
                 setLoading(true);
                 setError(null);
 
-                const response = await beritaService.getById(id);
+                // Simple tracking: once per browser session (no cooldown needed)
+                const viewedArticles = JSON.parse(sessionStorage.getItem('viewedArticles') || '[]');
+                const hasViewed = viewedArticles.includes(id);
+
+                const response = await beritaService.getById(id, hasViewed);
                 // beritaService.getById returns { data }
                 setBerita(response.data || null);
+
+                // Mark article as viewed in this session
+                if (!hasViewed) {
+                    viewedArticles.push(id);
+                    sessionStorage.setItem('viewedArticles', JSON.stringify(viewedArticles));
+                }
             } catch (err) {
                 // Check if error is due to network issue
                 const isNetworkError = err.message?.includes('Network') ||

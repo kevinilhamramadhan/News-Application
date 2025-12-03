@@ -130,46 +130,60 @@ const HomePage = () => {
                         onMouseEnter={() => setIsAutoPlaying(false)}
                         onMouseLeave={() => setIsAutoPlaying(true)}
                     >
-                        {/* Carousel Image */}
-                        <div
-                            className="cursor-pointer w-full h-full"
-                            onClick={() => (window.location.hash = `/berita/${currentHeroBerita.id}`)}
-                        >
-                            <img
-                                key={currentHeroBerita.id}
-                                src={getImageUrl(currentHeroBerita.gambar_url)}
-                                alt={currentHeroBerita.judul}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                onError={(e) => {
-                                    e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400"%3E%3Crect fill="%23f3f4f6" width="800" height="400"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="24" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3E📰 Gambar Tidak Tersedia%3C/text%3E%3C/svg%3E';
-                                }}
-                            />
-                        </div>
+                        {/* Carousel Slides Container */}
+                        <div className="relative w-full h-full">
+                            {featuredNews.map((berita, index) => (
+                                <div
+                                    key={berita.id}
+                                    className={`absolute inset-0 w-full h-full transition-all duration-700 ease-in-out ${index === currentSlide
+                                        ? 'opacity-100 translate-x-0 z-10'
+                                        : index < currentSlide
+                                            ? 'opacity-0 -translate-x-full z-0'
+                                            : 'opacity-0 translate-x-full z-0'
+                                        }`}
+                                >
+                                    {/* Carousel Image */}
+                                    <div
+                                        className="cursor-pointer w-full h-full"
+                                        onClick={() => (window.location.hash = `/berita/${berita.id}`)}
+                                    >
+                                        <img
+                                            src={getImageUrl(berita.gambar_url)}
+                                            alt={berita.judul}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            onError={(e) => {
+                                                e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400"%3E%3Crect fill="%23f3f4f6" width="800" height="400"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="24" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3E📰 Gambar Tidak Tersedia%3C/text%3E%3C/svg%3E';
+                                            }}
+                                        />
+                                    </div>
 
-                        {/* Overlay Gradient */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                                    {/* Overlay Gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
 
-                        {/* Content */}
-                        <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                            <span className="inline-block px-3 py-1 bg-primary-600 text-white text-sm font-semibold rounded-full mb-3">
-                                Berita Unggulan
-                            </span>
-                            <h1
-                                className="text-3xl md:text-4xl font-bold mb-3 group-hover:text-primary-300 transition-colors cursor-pointer"
-                                onClick={() => (window.location.hash = `/berita/${currentHeroBerita.id}`)}
-                            >
-                                {currentHeroBerita.judul}
-                            </h1>
-                            <p className="text-lg text-gray-200 mb-4 line-clamp-2">
-                                {currentHeroBerita.konten?.substring(0, 150) || currentHeroBerita.ringkasan?.substring(0, 150)}...
-                            </p>
-                            <div className="flex items-center gap-4 text-sm">
-                                <span>{currentHeroBerita.kategori?.nama}</span>
-                                <span className="flex items-center gap-1">
-                                    <Eye className="w-4 h-4" />
-                                    {currentHeroBerita.views || 0} views
-                                </span>
-                            </div>
+                                    {/* Content */}
+                                    <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                                        <span className="inline-block px-3 py-1 bg-primary-600 text-white text-sm font-semibold rounded-full mb-3">
+                                            Berita Unggulan
+                                        </span>
+                                        <h1
+                                            className="text-3xl md:text-4xl font-bold mb-3 group-hover:text-primary-300 transition-colors cursor-pointer"
+                                            onClick={() => (window.location.hash = `/berita/${berita.id}`)}
+                                        >
+                                            {berita.judul}
+                                        </h1>
+                                        <p className="text-lg text-gray-200 mb-4 line-clamp-2">
+                                            {berita.konten?.substring(0, 150) || berita.ringkasan?.substring(0, 150)}...
+                                        </p>
+                                        <div className="flex items-center gap-4 text-sm">
+                                            <span>{berita.kategori?.nama}</span>
+                                            <span className="flex items-center gap-1">
+                                                <Eye className="w-4 h-4" />
+                                                {berita.views || 0} views
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Prev/Next Buttons - Only show if multiple slides */}
@@ -180,7 +194,7 @@ const HomePage = () => {
                                         e.stopPropagation();
                                         handlePrevSlide();
                                     }}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-all opacity-0 group-hover:opacity-100"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 z-20"
                                     aria-label="Previous slide"
                                 >
                                     <ChevronLeft className="w-6 h-6" />
@@ -190,14 +204,14 @@ const HomePage = () => {
                                         e.stopPropagation();
                                         handleNextSlide();
                                     }}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-all opacity-0 group-hover:opacity-100"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 z-20"
                                     aria-label="Next slide"
                                 >
                                     <ChevronRight className="w-6 h-6" />
                                 </button>
 
                                 {/* Dot Indicators */}
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
                                     {featuredNews.map((_, index) => (
                                         <button
                                             key={index}

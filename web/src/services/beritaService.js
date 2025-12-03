@@ -23,17 +23,25 @@ export const beritaService = {
     /**
      * Get berita by ID
      */
-    getById: async (id) => {
+    getById: async (id, shouldSkipIncrement = false) => {
         try {
             const response = await apiClient.get(API_CONFIG.ENDPOINTS.BERITA.DETAIL(id));
 
-            // Only increment views if user is logged in
+            // Only increment views if:
+            // 1. We haven't already incremented (shouldSkipIncrement is false)
+            // 2. User is logged in
+            // 3. Online
             const token = apiClient.getToken();
-            if (token && navigator.onLine) {
+            if (!shouldSkipIncrement && token && navigator.onLine) {
                 try {
-                    await apiClient.post(API_CONFIG.ENDPOINTS.BERITA.INCREMENT_VIEW(id));
+                    const incrementResponse = await apiClient.post(API_CONFIG.ENDPOINTS.BERITA.INCREMENT_VIEW(id));
+                    // Update the view count with the response from increment API
+                    if (incrementResponse.data?.views !== undefined) {
+                        response.data.views = incrementResponse.data.views;
+                    }
                 } catch (viewsError) {
                     // Silently ignore views increment errors
+                    console.warn('Failed to increment views:', viewsError);
                 }
             }
 

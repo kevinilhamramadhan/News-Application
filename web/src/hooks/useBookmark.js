@@ -22,7 +22,11 @@ export const useBookmark = () => {
         setLoading(true);
         try {
             const { data } = await bookmarkService.getUserBookmarks();
-            const bookmarkIds = data.map(b => b.berita_id);
+
+            // API returns array of berita objects (already transformed in backend)
+            // Each berita has an 'id' field
+            const bookmarkIds = data.map(berita => berita.id);
+
             setBookmarks(bookmarkIds);
         } catch (error) {
             console.error('Fetch bookmarks error:', error);
@@ -67,21 +71,36 @@ export const useBookmark = () => {
             throw new Error('AUTH_REQUIRED');
         }
 
-        try {
-            const isCurrentlyBookmarked = bookmarks.includes(beritaId);
+        // Use a ref-like pattern: capture current state synchronously
+        let isCurrentlyBookmarked = false;
+        setBookmarks(prev => {
+            isCurrentlyBookmarked = prev.includes(beritaId);
+            return prev; // No change yet
+        });
 
+        try {
             if (isCurrentlyBookmarked) {
-                await removeBookmark(beritaId);
-                return false; // Was bookmarked, now removed
+                // Remove bookmark
+                await bookmarkService.removeBookmark(beritaId);
+                setBookmarks(prev => prev.filter(id => id !== beritaId));
+                return false;
             } else {
-                await addBookmark(beritaId);
-                return true; // Was not bookmarked, now added
+                // Add bookmark
+                await bookmarkService.addBookmark(beritaId);
+                setBookmarks(prev => {
+                    // Double-check it's not already there to avoid duplicates
+                    if (prev.includes(beritaId)) return prev;
+                    return [...prev, beritaId];
+                });
+                return true;
             }
         } catch (error) {
             console.error('Toggle bookmark error:', error);
+            // Refresh bookmarks from server on error to ensure sync
+            fetchBookmarks().catch(err => console.error('Failed to refresh bookmarks:', err));
             throw error;
         }
-    }, [user, bookmarks, addBookmark, removeBookmark]);
+    }, [user]);
 
     const isBookmarked = useCallback((beritaId) => {
         return bookmarks.includes(beritaId);

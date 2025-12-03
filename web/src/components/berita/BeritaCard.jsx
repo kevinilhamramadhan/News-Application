@@ -58,7 +58,7 @@ const BeritaCard = ({ berita, onBookmarkToggle, isBookmarked = false, requireAut
                     <button
                         onClick={handleBookmarkClick}
                         className={`absolute top-3 right-3 p-2 rounded-full shadow-lg transition-all ${isBookmarked
-                            ? 'bg-primary-600 text-white'
+                            ? 'bg-blue-500 text-white hover:bg-blue-600'
                             : 'bg-white/90 text-gray-700 hover:bg-white'
                             }`}
                         title={requireAuth ? 'Login untuk bookmark' : isBookmarked ? 'Hapus dari bookmark' : 'Tambah ke bookmark'}
